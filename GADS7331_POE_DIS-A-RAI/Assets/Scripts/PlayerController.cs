@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
 
     public float lookSpeed = 2f;
 
-    public float gravity = 20f;
+    //public float gravity = 20f;
 
     [Header("Camera")]
     public Camera playerCamera;
@@ -64,10 +64,10 @@ public class PlayerController : MonoBehaviour
 
         moveDir = (forward * v + right * h) * walkSpeed;
 
-        if (!characterController.isGrounded) 
-        {
-            moveDir.y -= gravity * Time.deltaTime;
-        }
+        //if (!characterController.isGrounded) 
+        //{
+        //    moveDir.y -= gravity * Time.deltaTime;
+        //}
             
 
         characterController.Move(moveDir * Time.deltaTime);
