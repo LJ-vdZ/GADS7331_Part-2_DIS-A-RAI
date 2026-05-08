@@ -35,10 +35,8 @@ If the command is not recognized, restart PowerShell or system session and try a
 ### Pull model
 
 ```powershell
-ollama pull llama3:8b
+ollama pull llama3
 ```
-
-You can replace `llama3:8b` with another approved model variant as needed.
 
 ### Start model inference service
 
@@ -55,7 +53,7 @@ Notes:
 ### Quick test request
 
 ```powershell
-ollama run llama3:8b "Respond with: Ollama is working."
+ollama run llama3 "Respond with: Ollama is working."
 ```
 
 If this returns a valid response, model execution is working.
@@ -75,6 +73,15 @@ Implementation guidance:
 - Build request payload in Unity (prompt, context, options)
 - Send via HTTP client
 - Parse response safely before applying in-game behavior/UI
+- Include current room/puzzle state in every request so JAI responses remain context-aware
+
+## 4.1) Input Assumptions from High Concept
+
+Current baseline controls used by the AI interaction flow:
+- `T` opens the in-game chat panel for JAI communication
+- `E` handles environment and terminal interaction
+
+If input mappings change in Unity, update this document and the `README.md` control section together.
 
 ## 5) Background Runtime Expectations
 

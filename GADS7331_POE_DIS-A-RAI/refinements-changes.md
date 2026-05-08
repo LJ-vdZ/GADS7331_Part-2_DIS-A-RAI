@@ -22,6 +22,17 @@ For each update, include:
 
 ## Entries
 
+### 2026-05-08 - High concept alignment pass completed
+- **Change type:** Scope + Technical + AI Prompting + UX
+- **What changed:** Updated project Markdown documentation to align with the newly added high concept PDF:
+  - `README.md` expanded with premise, narrative framing, core gameplay loop, controls, and explicit local-LLM rationale
+  - `ollama-plan.md` refined to include JAI persona guardrails, room-aware behavior patterns, and deception/playability balancing
+  - Added explicit linkage between game design intent (AI misguidance) and runtime prompt strategy
+  - Normalized model naming to match high concept wording (`Llama 3` / `llama3`) and removed `llama3:*` variant notation in setup instructions
+- **Why it changed:** The high concept defines final direction for tone, mechanics, and AI role; docs required synchronization to avoid drift between design and implementation.
+- **Impact:** Documentation now reflects the approved concept and can be used as a consistent implementation reference.
+- **Follow-up actions:** Validate prompt outputs in-engine against each room context and tune sabotage frequency for fairness.
+
 ### 2026-04-26 - Documentation baseline created
 - **Change type:** Scope + Technical Documentation
 - **What changed:** Added initial AI planning and setup documents:
@@ -37,7 +48,6 @@ For each update, include:
 ## Pending Updates
 
 To be completed when new information is available:
-- Integrate high concept document requirements into model/prompt strategy
 - Record tested model variants and latency benchmarks
 - Track changes to AI response design tied to gameplay iteration
 - Capture any risk mitigations introduced during implementation
