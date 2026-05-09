@@ -84,7 +84,7 @@ public class ElevatorPlatform : MonoBehaviour
             doorController.PlatformArrived();
     }
 
-    //Public method to call elevator from button
+    // Optional: Public method to call elevator from button
     public void CallElevatorToUpper()
     {
         if (!isMoving && currentState == ElevatorState.Lower)
