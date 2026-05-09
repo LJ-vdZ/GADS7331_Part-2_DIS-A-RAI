@@ -11,20 +11,28 @@ public class PlayerController : MonoBehaviour
     public Camera playerCamera;
     public float lookSpeed = 2f;
 
+    [Header("Interaction Settings")]
+    public float interactRange = 5f;
+    public Transform carryAttachPoint;
+    public float throwForce = 10f;
+
     private CharacterController characterController;
     private Vector3 moveVelocity = Vector3.zero;
     private float xRotation = 0f;
 
     private Transform currentPlatform = null;
+    private Rigidbody carriedObject = null;
+    private bool isCarrying = false;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
 
         if (playerCamera == null)
-        {
             playerCamera = GetComponentInChildren<Camera>() ?? Camera.main;
-        }
+
+        if (carryAttachPoint == null)
+            carryAttachPoint = transform.Find("CarryAttachPoint");
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
@@ -34,6 +42,7 @@ public class PlayerController : MonoBehaviour
     {
         HandleMouseLook();
         HandleMovement();
+        HandleInteraction();
     }
 
     private void HandleMouseLook()
@@ -57,7 +66,6 @@ public class PlayerController : MonoBehaviour
         Vector3 right = transform.TransformDirection(Vector3.right);
         Vector3 desiredMove = (forward * v + right * h) * walkSpeed;
 
-        // Gravity
         if (characterController.isGrounded)
             moveVelocity.y = -2f;
         else
@@ -68,14 +76,12 @@ public class PlayerController : MonoBehaviour
 
         characterController.Move(moveVelocity * Time.deltaTime);
 
-        // Stick to platform
         StickToPlatform();
     }
 
     private void StickToPlatform()
     {
-        // Raycast down to detect platform
-        if (Physics.Raycast(transform.position + Vector3.up * 0.15f, Vector3.down, out RaycastHit hit, 0.5f))
+        if (Physics.Raycast(transform.position + Vector3.up * 0.15f, Vector3.down, out RaycastHit hit, 0.6f))
         {
             if (hit.transform.CompareTag("ElevatorPlatform"))
             {
@@ -88,12 +94,84 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Release if no longer on platform
         if (currentPlatform != null)
         {
             transform.SetParent(null);
             currentPlatform = null;
         }
+    }
+
+    private void HandleInteraction()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (isCarrying)
+                DropOrThrowObject();
+            else
+                TryPickupOrInteract();
+        }
+
+        if (isCarrying && carriedObject != null && carryAttachPoint != null)
+        {
+            carriedObject.transform.position = Vector3.Lerp(carriedObject.transform.position, carryAttachPoint.position, 20f * Time.deltaTime);
+            carriedObject.transform.rotation = Quaternion.Lerp(carriedObject.transform.rotation, carryAttachPoint.rotation, 12f * Time.deltaTime);
+        }
+    }
+
+    private void TryPickupOrInteract()
+    {
+        Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        int layerMask = ~LayerMask.GetMask("Player");
+
+        if (Physics.Raycast(ray, out RaycastHit hit, interactRange, layerMask))
+        {
+            Debug.Log($"Hit: {hit.collider.gameObject.name} | Tag: {hit.collider.tag}");
+
+            Rigidbody rb = hit.collider.GetComponentInParent<Rigidbody>(); // Improved: Check parent too
+
+            if (rb != null)
+            {
+                Debug.Log($"Rigidbody found | Kinematic: {rb.isKinematic} | Tag: {hit.collider.tag}");
+
+                if (!rb.isKinematic)
+                {
+                    Debug.Log("Picking up object!");
+                    PickupObject(rb);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("Raycast hit nothing");
+        }
+    }
+
+    private void PickupObject(Rigidbody rb)
+    {
+        carriedObject = rb;
+        isCarrying = true;
+
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.transform.SetParent(carryAttachPoint);
+
+        Debug.Log("Object successfully picked up and attached!");
+    }
+
+    private void DropOrThrowObject()
+    {
+        if (carriedObject == null) return;
+
+        carriedObject.transform.SetParent(null);
+        carriedObject.isKinematic = false;
+        carriedObject.useGravity = true;
+
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            carriedObject.AddForce(playerCamera.transform.forward * throwForce, ForceMode.Impulse);
+
+        carriedObject = null;
+        isCarrying = false;
     }
 
 }

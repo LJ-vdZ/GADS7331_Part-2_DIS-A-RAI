@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Door
   - ElevatorPlatform
+  - Pickup
   layers:
   - Default
   - TransparentFX
