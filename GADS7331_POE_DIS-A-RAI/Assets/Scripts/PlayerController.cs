@@ -127,7 +127,20 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log($"Hit: {hit.collider.gameObject.name} | Tag: {hit.collider.tag}");
 
-            Rigidbody rb = hit.collider.GetComponentInParent<Rigidbody>(); // Improved: Check parent too
+            // === CRATE CHECK (Added - does NOT affect power cell logic) ===
+            if (hit.collider.CompareTag("Crate"))
+            {
+                Rigidbody crateRb = hit.collider.GetComponentInParent<Rigidbody>();
+                if (crateRb != null)
+                {
+                    Debug.Log("Crate detected - picking up");
+                    PickupObject(crateRb);   // Reuse your existing method
+                    return;
+                }
+            }
+
+            // === YOUR ORIGINAL POWER CELL LOGIC (Completely Unchanged) ===
+            Rigidbody rb = hit.collider.GetComponentInParent<Rigidbody>();
 
             if (rb != null)
             {
@@ -177,13 +190,13 @@ public class PlayerController : MonoBehaviour
                     {
                         carriedObject = null;
                         isCarrying = false;
-                        return; // Successfully inserted
+                        return;
                     }
                 }
             }
         }
 
-        // Normal drop / throw if not inserting into slot
+        // Normal drop / throw
         carriedObject.transform.SetParent(null);
         carriedObject.isKinematic = false;
         carriedObject.useGravity = true;
@@ -194,5 +207,4 @@ public class PlayerController : MonoBehaviour
         carriedObject = null;
         isCarrying = false;
     }
-
 }
