@@ -5,71 +5,95 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 6f;
-
-    public float lookSpeed = 2f;
-
-    //public float gravity = 20f;
+    public float gravity = 25f;
 
     [Header("Camera")]
     public Camera playerCamera;
+    public float lookSpeed = 2f;
 
     private CharacterController characterController;
-
-    private Vector3 moveDir = Vector3.zero;
-
+    private Vector3 moveVelocity = Vector3.zero;
     private float xRotation = 0f;
+
+    private Transform currentPlatform = null;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
 
-        
         if (playerCamera == null)
         {
-            playerCamera = GetComponentInChildren<Camera>();
-
-            if (playerCamera == null) 
-            {
-                playerCamera = Camera.main;
-            }
-                
+            playerCamera = GetComponentInChildren<Camera>() ?? Camera.main;
         }
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
     }
 
     private void Update()
     {
-        if (playerCamera == null) return;
+        HandleMouseLook();
+        HandleMovement();
+    }
 
-        //mouse Look
+    private void HandleMouseLook()
+    {
         float mouseX = Input.GetAxis("Mouse X") * lookSpeed;
-
         float mouseY = Input.GetAxis("Mouse Y") * lookSpeed;
 
-        transform.Rotate(Vector3.up * mouseX);                    //rotates player left or right 
+        transform.Rotate(Vector3.up * mouseX);
 
         xRotation -= mouseY;
-
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
+        playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+    }
 
-        playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);   //rotates camera up or down
-
-        //player movement
-        float h = Input.GetAxis("Horizontal");
-
-        float v = Input.GetAxis("Vertical");
+    private void HandleMovement()
+    {
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
 
         Vector3 forward = transform.TransformDirection(Vector3.forward);
-
         Vector3 right = transform.TransformDirection(Vector3.right);
+        Vector3 desiredMove = (forward * v + right * h) * walkSpeed;
 
-        moveDir = (forward * v + right * h) * walkSpeed;
+        // Gravity
+        if (characterController.isGrounded)
+            moveVelocity.y = -2f;
+        else
+            moveVelocity.y -= gravity * Time.deltaTime;
 
-        //if (!characterController.isGrounded) 
-        //{
-        //    moveDir.y -= gravity * Time.deltaTime;
-        //}
-            
+        moveVelocity.x = desiredMove.x;
+        moveVelocity.z = desiredMove.z;
 
-        characterController.Move(moveDir * Time.deltaTime);
+        characterController.Move(moveVelocity * Time.deltaTime);
+
+        // Stick to platform
+        StickToPlatform();
     }
+
+    private void StickToPlatform()
+    {
+        // Raycast down to detect platform
+        if (Physics.Raycast(transform.position + Vector3.up * 0.15f, Vector3.down, out RaycastHit hit, 0.5f))
+        {
+            if (hit.transform.CompareTag("ElevatorPlatform"))
+            {
+                if (currentPlatform != hit.transform)
+                {
+                    currentPlatform = hit.transform;
+                    transform.SetParent(currentPlatform);
+                }
+                return;
+            }
+        }
+
+        // Release if no longer on platform
+        if (currentPlatform != null)
+        {
+            transform.SetParent(null);
+            currentPlatform = null;
+        }
+    }
+
 }
