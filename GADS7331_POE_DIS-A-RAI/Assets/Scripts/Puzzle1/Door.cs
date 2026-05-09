@@ -1,35 +1,32 @@
 using UnityEngine;
 
-public class HangarDoorController : MonoBehaviour
+public class Door : MonoBehaviour
 {
     [Header("Door References")]
     public Transform leftDoor;
     public Transform rightDoor;
 
-    [Header("Animation Settings")]
+    [Header("Movement Settings")]
     public float openDistance = 2.5f;
     public float openSpeed = 2f;
-    public float delayBeforeOpen = 1f;
+    public float delayBeforeOpen = 0f;
 
-    [Header("Movement Settings")]
+    [Header("Movement Axis")]
     public bool moveAlongZ = true;
 
-    [Header("Trigger")]
-    public BoxCollider arrivalTrigger;
-
-    private Vector3 leftClosedPos;
+    private Vector3 leftClosedPos; 
     private Vector3 rightClosedPos;
     private Vector3 leftOpenPos;
     private Vector3 rightOpenPos;
 
     private bool doorsOpen = false;
-    private bool isOpening = false;
+    private bool isMoving = false;
 
-    void Start()
+    private void Start()
     {
         if (leftDoor == null || rightDoor == null)
         {
-            Debug.LogError("Left and Right door transforms must be assigned!");
+            Debug.LogError("LeftDoor and RightDoor must be assigned on " + gameObject.name);
             return;
         }
 
@@ -37,54 +34,44 @@ public class HangarDoorController : MonoBehaviour
         rightClosedPos = rightDoor.position;
 
         CalculateOpenPositions();
-
-        if (arrivalTrigger == null)
-        {
-            Debug.LogWarning("Arrival trigger not assigned.");
-        }
     }
 
     private void CalculateOpenPositions()
     {
         if (moveAlongZ)
         {
+            // Left door  > Positive Z
+            // Right door > Negative Z
             leftOpenPos = leftClosedPos + new Vector3(0, 0, openDistance);
             rightOpenPos = rightClosedPos + new Vector3(0, 0, -openDistance);
         }
         else
         {
-            // Fallback X-axis
             leftOpenPos = leftClosedPos + new Vector3(openDistance, 0, 0);
             rightOpenPos = rightClosedPos + new Vector3(-openDistance, 0, 0);
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void OpenDoors()
     {
-        if (other.gameObject.CompareTag("ElevatorPlatform") && !doorsOpen && !isOpening)
-        {
-            Invoke(nameof(OpenDoors), delayBeforeOpen);
-        }
+        if (doorsOpen || isMoving) return;
+
+        if (delayBeforeOpen > 0f)
+            Invoke(nameof(StartOpening), delayBeforeOpen);
+        else
+            StartOpening();
     }
 
-    public void PlatformArrived()
+    private void StartOpening()
     {
-        if (!doorsOpen && !isOpening)
-            Invoke(nameof(OpenDoors), delayBeforeOpen);
-    }
-
-    private void OpenDoors()
-    {
-        if (isOpening) return;
         StartCoroutine(OpenDoorsCoroutine());
     }
 
     private System.Collections.IEnumerator OpenDoorsCoroutine()
     {
-        isOpening = true;
+        isMoving = true;
 
         float t = 0f;
-
         while (t < 1f)
         {
             t += Time.deltaTime * openSpeed;
@@ -99,21 +86,23 @@ public class HangarDoorController : MonoBehaviour
         leftDoor.position = leftOpenPos;
         rightDoor.position = rightOpenPos;
         doorsOpen = true;
-        isOpening = false;
+        isMoving = false;
+
+        Debug.Log("Main Puzzle Door Opened!");
     }
 
     public void CloseDoors()
     {
-        if (doorsOpen)
-        {
-            StartCoroutine(CloseDoorsCoroutine());
-        }
+        if (!doorsOpen || isMoving) return;
+
+        StartCoroutine(CloseDoorsCoroutine());
     }
 
     private System.Collections.IEnumerator CloseDoorsCoroutine()
     {
-        float t = 0f;
+        isMoving = true;
 
+        float t = 0f;
         while (t < 1f)
         {
             t += Time.deltaTime * openSpeed;
@@ -128,7 +117,15 @@ public class HangarDoorController : MonoBehaviour
         leftDoor.position = leftClosedPos;
         rightDoor.position = rightClosedPos;
         doorsOpen = false;
+        isMoving = false;
     }
 
-
+    // Optional: Toggle
+    public void ToggleDoor()
+    {
+        if (doorsOpen)
+            CloseDoors();
+        else
+            OpenDoors();
+    }
 }

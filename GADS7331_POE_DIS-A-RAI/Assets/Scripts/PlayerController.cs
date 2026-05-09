@@ -163,6 +163,27 @@ public class PlayerController : MonoBehaviour
     {
         if (carriedObject == null) return;
 
+        // Check if we're looking at a PowerCellSlot
+        Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        if (Physics.Raycast(ray, out RaycastHit hit, 3f))
+        {
+            PowerCellSlot slot = hit.collider.GetComponentInParent<PowerCellSlot>();
+            if (slot != null)
+            {
+                PowerCell cell = carriedObject.GetComponent<PowerCell>();
+                if (cell != null)
+                {
+                    if (slot.InsertCell(cell))
+                    {
+                        carriedObject = null;
+                        isCarrying = false;
+                        return; // Successfully inserted
+                    }
+                }
+            }
+        }
+
+        // Normal drop / throw if not inserting into slot
         carriedObject.transform.SetParent(null);
         carriedObject.isKinematic = false;
         carriedObject.useGravity = true;
