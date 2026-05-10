@@ -5,7 +5,8 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 6f;
-    public float gravity = 25f;
+    public float crateCarrySpeed = 2.8f;     // Added: Slower speed when carrying crate
+    public float gravity = 25f;              // eAdded: Was missing
 
     [Header("Camera")]
     public Camera playerCamera;
@@ -23,6 +24,10 @@ public class PlayerController : MonoBehaviour
     private Transform currentPlatform = null;
     private Rigidbody carriedObject = null;
     private bool isCarrying = false;
+
+    // Crate Handling
+    private Transform carriedCrate = null;
+    private float crateOriginalHeight;
 
     private void Awake()
     {
@@ -43,6 +48,7 @@ public class PlayerController : MonoBehaviour
         HandleMouseLook();
         HandleMovement();
         HandleInteraction();
+        UpdateCarriedCrate();
     }
 
     private void HandleMouseLook()
@@ -64,7 +70,11 @@ public class PlayerController : MonoBehaviour
 
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
-        Vector3 desiredMove = (forward * v + right * h) * walkSpeed;
+
+        // Use reduced speed when carrying crate
+        float currentSpeed = (carriedCrate != null) ? crateCarrySpeed : walkSpeed;
+
+        Vector3 desiredMove = (forward * v + right * h) * currentSpeed;
 
         if (characterController.isGrounded)
             moveVelocity.y = -2f;
@@ -93,7 +103,6 @@ public class PlayerController : MonoBehaviour
                 return;
             }
         }
-
         if (currentPlatform != null)
         {
             transform.SetParent(null);
@@ -105,7 +114,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if (isCarrying)
+            if (isCarrying || carriedCrate != null)
                 DropOrThrowObject();
             else
                 TryPickupOrInteract();
@@ -125,39 +134,51 @@ public class PlayerController : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactRange, layerMask))
         {
-            Debug.Log($"Hit: {hit.collider.gameObject.name} | Tag: {hit.collider.tag}");
-
-            // === CRATE CHECK (Added - does NOT affect power cell logic) ===
             if (hit.collider.CompareTag("Crate"))
             {
                 Rigidbody crateRb = hit.collider.GetComponentInParent<Rigidbody>();
                 if (crateRb != null)
                 {
-                    Debug.Log("Crate detected - picking up");
-                    PickupObject(crateRb);   // Reuse your existing method
+                    AttachCrate(hit.transform);
                     return;
                 }
             }
 
-            // === YOUR ORIGINAL POWER CELL LOGIC (Completely Unchanged) ===
             Rigidbody rb = hit.collider.GetComponentInParent<Rigidbody>();
 
             if (rb != null)
             {
-                Debug.Log($"Rigidbody found | Kinematic: {rb.isKinematic} | Tag: {hit.collider.tag}");
-
                 if (!rb.isKinematic)
                 {
-                    Debug.Log("Picking up object!");
                     PickupObject(rb);
                     return;
                 }
             }
         }
-        else
+    }
+
+    private void AttachCrate(Transform crate)
+    {
+        carriedCrate = crate;
+        crateOriginalHeight = crate.position.y;
+
+        Rigidbody rb = crate.GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            Debug.Log("Raycast hit nothing");
+            rb.isKinematic = true;
+            rb.useGravity = false;
         }
+
+        crate.SetParent(transform);
+    }
+
+    private void UpdateCarriedCrate()
+    {
+        if (carriedCrate == null) return;
+
+        Vector3 pos = carriedCrate.position;
+        pos.y = crateOriginalHeight;
+        carriedCrate.position = pos;
     }
 
     private void PickupObject(Rigidbody rb)
@@ -168,15 +189,25 @@ public class PlayerController : MonoBehaviour
         rb.isKinematic = true;
         rb.useGravity = false;
         rb.transform.SetParent(carryAttachPoint);
-
-        Debug.Log("Object successfully picked up and attached!");
     }
 
     private void DropOrThrowObject()
     {
+        if (carriedCrate != null)
+        {
+            carriedCrate.SetParent(null);
+            Rigidbody rb = carriedCrate.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+            }
+            carriedCrate = null;
+            return;
+        }
+
         if (carriedObject == null) return;
 
-        // Check if we're looking at a PowerCellSlot
         Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
         if (Physics.Raycast(ray, out RaycastHit hit, 3f))
         {
@@ -184,19 +215,15 @@ public class PlayerController : MonoBehaviour
             if (slot != null)
             {
                 PowerCell cell = carriedObject.GetComponent<PowerCell>();
-                if (cell != null)
+                if (cell != null && slot.InsertCell(cell))
                 {
-                    if (slot.InsertCell(cell))
-                    {
-                        carriedObject = null;
-                        isCarrying = false;
-                        return;
-                    }
+                    carriedObject = null;
+                    isCarrying = false;
+                    return;
                 }
             }
         }
 
-        // Normal drop / throw
         carriedObject.transform.SetParent(null);
         carriedObject.isKinematic = false;
         carriedObject.useGravity = true;
