@@ -4,57 +4,64 @@ public class PressurePlate : MonoBehaviour
 {
     [Header("Visuals")]
     public Renderer plateRenderer;
-    public Color deactivatedColor = Color.red;
-    public Color activatedColor = Color.green;
-    public Color occupiedColor = new Color(0, 1f, 0.5f); // Bright green when occupied
+    public Color inactiveColor = Color.red;
+    public Color activeColor = Color.green;
+    public Color occupiedColor = new Color(0f, 0.8f, 0.3f);
 
-    [Header("Settings")]
-    public bool isActive = false;
+    [Header("Debug")]
+    public bool showDebug = true;
 
     private Material material;
-    private Collider plateCollider;
+    private bool isOccupied = false;
+    private bool isActive = false;
 
     private void Awake()
     {
-        plateCollider = GetComponent<Collider>();
         if (plateRenderer != null)
             material = plateRenderer.material;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player") || other.CompareTag("Crate"))
+        {
+            isOccupied = true;
+            Activate();
+            if (showDebug) Debug.Log($"Plate {name} occupied by {other.tag}");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player") || other.CompareTag("Crate"))
+        {
+            isOccupied = false;
+            if (showDebug) Debug.Log($"Plate {name} no longer occupied by {other.tag}");
+        }
     }
 
     public void Activate()
     {
         isActive = true;
-        UpdateVisuals();
+        UpdateVisual();
     }
 
     public void Deactivate()
     {
         isActive = false;
-        UpdateVisuals();
+        UpdateVisual();
     }
 
-    public void SetOccupied(bool occupied)
+    private void UpdateVisual()
     {
-        if (occupied && isActive)
-        {
-            SetColor(occupiedColor);
-        }
+        if (material == null) return;
+
+        if (isOccupied && isActive)
+            material.color = occupiedColor;
         else
-        {
-            SetColor(isActive ? activatedColor : deactivatedColor);
-        }
-    }
-
-    private void UpdateVisuals()
-    {
-        SetColor(isActive ? activatedColor : deactivatedColor);
-    }
-
-    private void SetColor(Color color)
-    {
-        if (material != null)
-            material.color = color;
+            material.color = isActive ? activeColor : inactiveColor;
     }
 
     public bool IsActive() => isActive;
+    public bool IsOccupied() => isOccupied;
 }

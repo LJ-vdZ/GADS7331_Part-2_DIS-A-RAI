@@ -6,93 +6,104 @@ public class PressurePuzzleManager : MonoBehaviour
 {
     [Header("Puzzle Settings")]
     public PressurePlate[] pressurePlates = new PressurePlate[4];
-    public GameObject doorToOpen;
-    public Door doorScript;                    // Use your new Door script
+    public Door puzzle2Door;                    // Assign your Door script here
 
     [Header("Deactivation Settings")]
-    public float minDeactivateTime = 8f;
-    public float maxDeactivateTime = 15f;
+    public float minDeactivateInterval = 8f;
+    public float maxDeactivateInterval = 14f;
 
-    private HashSet<PressurePlate> activePlates = new HashSet<PressurePlate>();
     private bool puzzleSolved = false;
-    private Coroutine deactivationCoroutine;
+    private System.Collections.IEnumerator deactivationRoutine;
 
     private void Start()
     {
-        // Initialize all plates as deactivated
+        if (puzzle2Door == null)
+            Debug.LogError("Main Door is not assigned in PressurePuzzleManager!");
+
+        // Initialize plates
         foreach (var plate in pressurePlates)
         {
             if (plate != null) plate.Deactivate();
         }
 
-        StartDeactivationTimer();
+        StartDeactivationRoutine();
     }
 
-    public void OnPlateActivated(PressurePlate plate)
-    {
-        activePlates.Add(plate);
-        CheckPuzzleComplete();
-    }
-
-    public void OnPlateDeactivated(PressurePlate plate)
-    {
-        activePlates.Remove(plate);
-    }
-
-    private void CheckPuzzleComplete()
+    private void Update()
     {
         if (puzzleSolved) return;
 
-        if (activePlates.Count >= pressurePlates.Length)
+        if (AllPlatesActive())
         {
             puzzleSolved = true;
             SolvePuzzle();
         }
     }
 
+    private bool AllPlatesActive()
+    {
+        foreach (var plate in pressurePlates)
+        {
+            if (plate == null || !plate.IsActive())
+                return false;
+        }
+        return true;
+    }
+
     private void SolvePuzzle()
     {
         Debug.Log("PRESSURE PLATE PUZZLE SOLVED!");
-        StopAllCoroutines();
+        StopDeactivationRoutine();
 
-        if (doorScript != null)
-            doorScript.OpenDoors();
-        else if (doorToOpen != null)
-            Debug.LogWarning("Door script not assigned, but door object is present.");
+        if (puzzle2Door != null)
+            puzzle2Door.OpenDoors();
     }
 
-    // Random deactivation system
-    private void StartDeactivationTimer()
+    // ==================== RANDOM DEACTIVATION ====================
+    private void StartDeactivationRoutine()
     {
-        if (deactivationCoroutine != null)
-            StopCoroutine(deactivationCoroutine);
+        if (deactivationRoutine != null)
+            StopCoroutine(deactivationRoutine);
 
-        float delay = Random.Range(minDeactivateTime, maxDeactivateTime);
-        deactivationCoroutine = StartCoroutine(DeactivateRandomPlate(delay));
+        deactivationRoutine = DeactivationCoroutine();
+        StartCoroutine(deactivationRoutine);
     }
 
-    private System.Collections.IEnumerator DeactivateRandomPlate(float delay)
+    private void StopDeactivationRoutine()
     {
-        yield return new WaitForSeconds(delay);
+        if (deactivationRoutine != null)
+            StopCoroutine(deactivationRoutine);
+    }
 
-        // Find plates that are currently active and not occupied by player or crate
-        var candidates = pressurePlates.Where(p => p.IsActive()).ToList();
-
-        if (candidates.Count > 0)
+    private System.Collections.IEnumerator DeactivationCoroutine()
+    {
+        while (!puzzleSolved)
         {
-            PressurePlate plateToDeactivate = candidates[Random.Range(0, candidates.Count)];
-            plateToDeactivate.Deactivate();
-            OnPlateDeactivated(plateToDeactivate);
+            float waitTime = Random.Range(minDeactivateInterval, maxDeactivateInterval);
+            yield return new WaitForSeconds(waitTime);
 
-            Debug.Log($"Plate deactivated: {plateToDeactivate.name}");
+            // Get currently active plates that are NOT occupied
+            var activePlates = new System.Collections.Generic.List<PressurePlate>();
+
+            foreach (var plate in pressurePlates)
+            {
+                if (plate.IsActive() && !plate.IsOccupied())
+                    activePlates.Add(plate);
+            }
+
+            if (activePlates.Count > 0)
+            {
+                PressurePlate plateToDeactivate = activePlates[Random.Range(0, activePlates.Count)];
+                plateToDeactivate.Deactivate();
+                Debug.Log($"Randomly deactivated plate: {plateToDeactivate.name}");
+            }
         }
-
-        StartDeactivationTimer(); // Restart timer
     }
 
-    // Public method for plates to call
-    public void RegisterPlateActivation(PressurePlate plate)
+    // For testing
+    public void ForceSolve()
     {
-        OnPlateActivated(plate);
+        puzzleSolved = true;
+        if (puzzle2Door != null) puzzle2Door.OpenDoors();
     }
 }
