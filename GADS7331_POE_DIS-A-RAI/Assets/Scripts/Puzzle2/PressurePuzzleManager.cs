@@ -1,52 +1,61 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
+
 
 public class PressurePuzzleManager : MonoBehaviour
 {
     [Header("Puzzle Settings")]
     public PressurePlate[] pressurePlates = new PressurePlate[4];
-    public Door puzzle2Door;                    // Assign your Door script here
+    public Door mainDoor;
 
     [Header("Deactivation Settings")]
-    public float minDeactivateInterval = 8f;
-    public float maxDeactivateInterval = 14f;
+    public float minDeactivateInterval = 10f;
+    public float maxDeactivateInterval = 18f;
 
+    private bool allPlatesActivatedOnce = false;
     private bool puzzleSolved = false;
-    private System.Collections.IEnumerator deactivationRoutine;
+    private Coroutine deactivationRoutine;
+    private bool deactivationInProgress = false;   // Strong guard
 
     private void Start()
     {
-        if (puzzle2Door == null)
-            Debug.LogError("Main Door is not assigned in PressurePuzzleManager!");
+        if (mainDoor == null)
+            Debug.LogError("Main Door not assigned!");
 
-        // Initialize plates
         foreach (var plate in pressurePlates)
-        {
             if (plate != null) plate.Deactivate();
-        }
-
-        StartDeactivationRoutine();
     }
 
     private void Update()
     {
         if (puzzleSolved) return;
 
-        if (AllPlatesActive())
+        if (!allPlatesActivatedOnce && AllPlatesActivatedOnce())
+        {
+            allPlatesActivatedOnce = true;
+            Debug.Log("All plates activated once! Starting controlled deactivation.");
+            StartDeactivationRoutine();
+        }
+
+        if (AllPlatesCurrentlyOccupied())
         {
             puzzleSolved = true;
             SolvePuzzle();
         }
     }
 
-    private bool AllPlatesActive()
+    private bool AllPlatesActivatedOnce()
     {
         foreach (var plate in pressurePlates)
-        {
-            if (plate == null || !plate.IsActive())
-                return false;
-        }
+            if (!plate.IsActive()) return false;
+        return true;
+    }
+
+    private bool AllPlatesCurrentlyOccupied()
+    {
+        foreach (var plate in pressurePlates)
+            if (!plate.IsOccupied()) return false;
         return true;
     }
 
@@ -54,19 +63,13 @@ public class PressurePuzzleManager : MonoBehaviour
     {
         Debug.Log("PRESSURE PLATE PUZZLE SOLVED!");
         StopDeactivationRoutine();
-
-        if (puzzle2Door != null)
-            puzzle2Door.OpenDoors();
+        if (mainDoor != null) mainDoor.OpenDoors();
     }
 
-    // ==================== RANDOM DEACTIVATION ====================
     private void StartDeactivationRoutine()
     {
-        if (deactivationRoutine != null)
-            StopCoroutine(deactivationRoutine);
-
-        deactivationRoutine = DeactivationCoroutine();
-        StartCoroutine(deactivationRoutine);
+        if (deactivationRoutine != null) StopCoroutine(deactivationRoutine);
+        deactivationRoutine = StartCoroutine(DeactivationCoroutine());
     }
 
     private void StopDeactivationRoutine()
@@ -75,35 +78,48 @@ public class PressurePuzzleManager : MonoBehaviour
             StopCoroutine(deactivationRoutine);
     }
 
-    private System.Collections.IEnumerator DeactivationCoroutine()
+    private IEnumerator DeactivationCoroutine()
     {
         while (!puzzleSolved)
         {
-            float waitTime = Random.Range(minDeactivateInterval, maxDeactivateInterval);
-            yield return new WaitForSeconds(waitTime);
+            float delay = Random.Range(minDeactivateInterval, maxDeactivateInterval);
+            yield return new WaitForSeconds(delay);
 
-            // Get currently active plates that are NOT occupied
-            var activePlates = new System.Collections.Generic.List<PressurePlate>();
-
-            foreach (var plate in pressurePlates)
-            {
-                if (plate.IsActive() && !plate.IsOccupied())
-                    activePlates.Add(plate);
-            }
-
-            if (activePlates.Count > 0)
-            {
-                PressurePlate plateToDeactivate = activePlates[Random.Range(0, activePlates.Count)];
-                plateToDeactivate.Deactivate();
-                Debug.Log($"Randomly deactivated plate: {plateToDeactivate.name}");
-            }
+            if (!puzzleSolved)
+                TryDeactivateOnePlate();
         }
     }
 
-    // For testing
-    public void ForceSolve()
+    private void TryDeactivateOnePlate()
     {
-        puzzleSolved = true;
-        if (puzzle2Door != null) puzzle2Door.OpenDoors();
+        if (deactivationInProgress) return;
+        deactivationInProgress = true;
+
+        List<PressurePlate> candidates = new List<PressurePlate>();
+
+        foreach (var plate in pressurePlates)
+        {
+            if (plate.IsActive() && !plate.IsOccupied())
+                candidates.Add(plate);
+        }
+
+        if (candidates.Count > 0)
+        {
+            PressurePlate chosen = candidates[Random.Range(0, candidates.Count)];
+            chosen.Deactivate();
+            Debug.Log($"[Single Deactivation] Deactivated: {chosen.name}");
+        }
+
+        deactivationInProgress = false;
+    }
+
+    // Called from PressurePlate when player steps on a previously deactivated plate
+    public void OnPlateReactivated(PressurePlate plate)
+    {
+        if (allPlatesActivatedOnce && !puzzleSolved)
+        {
+            Debug.Log($"Player reactivated {plate.name} > Deactivating one other plate");
+            TryDeactivateOnePlate();
+        }
     }
 }

@@ -4,30 +4,46 @@ public class PressurePlate : MonoBehaviour
 {
     [Header("Visuals")]
     public Renderer plateRenderer;
-    public Color inactiveColor = Color.red;
-    public Color activeColor = Color.green;
-    public Color occupiedColor = new Color(0f, 0.8f, 0.3f);
+    public int materialIndex = 0;
+
+    [Header("Materials")]
+    public Material inactiveMaterial;
+    public Material occupiedMaterial;
 
     [Header("Debug")]
     public bool showDebug = true;
 
-    private Material material;
-    private bool isOccupied = false;
-    private bool isActive = false;
+    private bool hasBeenActivated = false;      // Once true, stays true until manager deactivates
+    private bool isCurrentlyOccupied = false;
 
     private void Awake()
     {
-        if (plateRenderer != null)
-            material = plateRenderer.material;
+        if (plateRenderer == null)
+            Debug.LogWarning("PlateRenderer not assigned on " + gameObject.name);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player") || other.CompareTag("Crate"))
         {
-            isOccupied = true;
-            Activate();
-            if (showDebug) Debug.Log($"Plate {name} occupied by {other.tag}");
+            isCurrentlyOccupied = true;
+
+            bool wasAlreadyActivated = hasBeenActivated;
+
+            if (!hasBeenActivated)
+            {
+                hasBeenActivated = true;
+                if (showDebug) Debug.Log($"Plate {name} has been permanently activated!");
+            }
+
+            UpdateVisual();
+
+            // Tell manager player reactivated a plate
+            if (wasAlreadyActivated && other.CompareTag("Player"))
+            {
+                PressurePuzzleManager manager = FindObjectOfType<PressurePuzzleManager>();
+                if (manager != null) manager.OnPlateReactivated(this);
+            }
         }
     }
 
@@ -35,33 +51,39 @@ public class PressurePlate : MonoBehaviour
     {
         if (other.CompareTag("Player") || other.CompareTag("Crate"))
         {
-            isOccupied = false;
-            if (showDebug) Debug.Log($"Plate {name} no longer occupied by {other.tag}");
+            isCurrentlyOccupied = false;
+            UpdateVisual();
         }
     }
 
     public void Activate()
     {
-        isActive = true;
+        hasBeenActivated = true;
         UpdateVisual();
     }
 
     public void Deactivate()
     {
-        isActive = false;
+        hasBeenActivated = false;
         UpdateVisual();
     }
 
     private void UpdateVisual()
     {
-        if (material == null) return;
+        if (plateRenderer == null) return;
 
-        if (isOccupied && isActive)
-            material.color = occupiedColor;
+        Material[] mats = plateRenderer.materials;
+
+        // FIXED: Show occupiedMaterial (green) if the plate has been activated, even if not currently occupied
+        if (hasBeenActivated)
+            mats[materialIndex] = occupiedMaterial;     // Green when activated
         else
-            material.color = isActive ? activeColor : inactiveColor;
+            mats[materialIndex] = inactiveMaterial;     // Orange when never activated or deactivated
+
+        plateRenderer.materials = mats;
     }
 
-    public bool IsActive() => isActive;
-    public bool IsOccupied() => isOccupied;
+    public bool IsActive() => hasBeenActivated;
+    public bool IsOccupied() => isCurrentlyOccupied;
 }
+
