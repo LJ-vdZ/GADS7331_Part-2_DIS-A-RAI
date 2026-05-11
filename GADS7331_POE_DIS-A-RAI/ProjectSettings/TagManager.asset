@@ -8,6 +8,7 @@ TagManager:
   - ElevatorPlatform
   - Pickup
   - Crate
+  - PushSurface
   layers:
   - Default
   - TransparentFX

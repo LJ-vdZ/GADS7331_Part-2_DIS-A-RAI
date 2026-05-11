@@ -29,6 +29,21 @@ public class PlayerController : MonoBehaviour
     private Transform carriedCrate = null;
     private float crateOriginalHeight;
 
+    //for zero gravity
+    private bool isInZeroGravity = false;
+    private Rigidbody playerRb;
+
+    private float zeroGDrag = 1.2f;
+    private float zeroGAngularDrag = 2f;
+    private float normalMass = 1f;           
+    private float pushForce = 25f;
+
+    private float zeroGMaxSpeed = 8f;        // Reduced from 18f
+    private float thrustForce = 28f;         // Main forward thrust when pressing Space
+    private float pushOffForce = 22f;        // Force when pushing off walls/floors
+
+    private float surfaceDetectionDistance = 4f;
+
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -40,7 +55,12 @@ public class PlayerController : MonoBehaviour
             carryAttachPoint = transform.Find("CarryAttachPoint");
 
         Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null) rb.isKinematic = true;
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            playerRb = rb;
+        }
     }
 
     private void Update()
@@ -65,13 +85,19 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
+        if (isInZeroGravity)
+        {
+            HandleZeroGMovement();
+            return;
+        }
+
+        // === Normal Gravity Movement (unchanged) ===
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
-        // Use reduced speed when carrying crate
         float currentSpeed = (carriedCrate != null) ? crateCarrySpeed : walkSpeed;
 
         Vector3 desiredMove = (forward * v + right * h) * currentSpeed;
@@ -88,6 +114,89 @@ public class PlayerController : MonoBehaviour
 
         StickToPlatform();
     }
+
+    private void HandleZeroGMovement()
+    {
+        if (playerRb == null) return;
+
+        // Very light float
+        playerRb.AddForce(Vector3.up * 0.7f, ForceMode.Acceleration);
+
+        // Hold Space to thrust forward (only when near surface)
+        if (Input.GetKey(KeyCode.Space) && IsNearSurface())
+        {
+            Vector3 thrustDir = playerCamera.transform.forward;
+            playerRb.AddForce(thrustDir * thrustForce, ForceMode.Acceleration);
+
+            Debug.Log("Thrusting forward");   // Remove this later
+        }
+
+        // Limit speed
+        if (playerRb.linearVelocity.magnitude > zeroGMaxSpeed)
+            playerRb.linearVelocity = playerRb.linearVelocity.normalized * zeroGMaxSpeed;
+
+        KeepUpright();
+    }
+
+    private bool IsNearSurface()
+    {
+        Vector3 pos = transform.position;
+
+        Vector3[] directions =
+        {
+        -transform.up,                    // Floor
+        transform.up,                     // Ceiling
+        -playerCamera.transform.forward,  // Behind camera (very useful)
+        playerCamera.transform.forward,
+        transform.right,
+        -transform.right
+        };
+
+        foreach (Vector3 dir in directions)
+        {
+            if (Physics.Raycast(pos, dir, surfaceDetectionDistance))
+            {
+                Debug.DrawRay(pos, dir * surfaceDetectionDistance, Color.green, 0.1f);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void KeepUpright()
+    {
+        Quaternion uprightRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, uprightRot, 12f * Time.deltaTime);
+        playerRb.angularVelocity = Vector3.zero;
+    }
+
+    private void TryPushOffSurface()
+    {
+        Vector3[] checkDirections =
+    {
+        -transform.up,                    // Down
+        -playerCamera.transform.forward,  // Behind camera
+        playerCamera.transform.forward,
+        transform.right,
+        -transform.right,
+        transform.up
+    };
+
+        foreach (Vector3 dir in checkDirections)
+        {
+            if (Physics.Raycast(transform.position, dir, out RaycastHit hit, 2.2f))
+            {
+                Vector3 pushDir = hit.normal;
+                playerRb.AddForce(pushDir * pushOffForce, ForceMode.Impulse);
+
+                // Nice little spin when pushing off
+                playerRb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
+                return;
+            }
+        }
+    }
+
+
 
     private void StickToPlatform()
     {
@@ -233,5 +342,46 @@ public class PlayerController : MonoBehaviour
 
         carriedObject = null;
         isCarrying = false;
+    }
+
+    //for zero gravity puzzle
+    public void EnterZeroGravity()
+    {
+        isInZeroGravity = true;
+        characterController.enabled = false;
+
+        playerRb = GetComponent<Rigidbody>();
+        if (playerRb == null)
+            playerRb = gameObject.AddComponent<Rigidbody>();
+
+        playerRb.isKinematic = false;
+        playerRb.useGravity = false;
+        playerRb.linearDamping = 1.4f;       // Higher drag = better control
+        playerRb.angularDamping = 5f;        // Strong angular damping
+        playerRb.mass = 1f;
+        playerRb.freezeRotation = true;      // This helps a lot with rotation
+        playerRb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        // Gentle initial float
+        playerRb.AddForce(Vector3.up * 4f, ForceMode.Impulse);
+
+        Debug.Log("Zero-G Active - Press SPACE near surfaces to push off");
+    }
+
+    public void ExitZeroGravity()
+    {
+        isInZeroGravity = false;
+
+        if (playerRb != null)
+        {
+            playerRb.useGravity = true;
+            playerRb.isKinematic = true;   // important for CharacterController
+            // Do NOT destroy it unless you want to — keeping it is often safer
+        }
+
+        characterController.enabled = true;
+        moveVelocity = Vector3.zero;
+
+        Debug.Log("Gravity Restored");
     }
 }
