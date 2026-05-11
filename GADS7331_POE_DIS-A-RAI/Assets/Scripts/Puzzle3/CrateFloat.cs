@@ -56,4 +56,17 @@ public class CrateFloat : MonoBehaviour
         Vector3 bounce = collision.contacts[0].normal * 1f;     // Reduced from 8f
         rb.linearVelocity = bounce + Random.insideUnitSphere * 1f;    // Reduced randomness
     }
+
+    public void DeactivateZeroG()
+    {
+        zeroGActive = false;
+        rb.useGravity = true;
+        rb.linearDamping = 0.1f;     // Normal damping
+        rb.angularDamping = 0.1f;
+
+        // Optional: Give a small downward push so they fall nicely
+        rb.AddForce(Vector3.down * 3f, ForceMode.Impulse);
+
+        Debug.Log("Crate gravity restored: " + gameObject.name);
+    }
 }

@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     private Rigidbody carriedObject = null;
     private bool isCarrying = false;
 
+    private bool isCameraLocked = false;
+
     // Crate Handling
     private Transform carriedCrate = null;
     private float crateOriginalHeight;
@@ -35,14 +37,15 @@ public class PlayerController : MonoBehaviour
 
     private float zeroGDrag = 1.2f;
     private float zeroGAngularDrag = 2f;
-    private float normalMass = 1f;           
+    private float normalMass = 1f;
     private float pushForce = 25f;
 
     private float zeroGMaxSpeed = 8f;        // Reduced from 18f
     private float thrustForce = 28f;         // Main forward thrust when pressing Space
     private float pushOffForce = 22f;        // Force when pushing off walls/floors
 
-    private float surfaceDetectionDistance = 4f;
+    private float surfaceDetectionDistance = 2f;
+
 
     private void Awake()
     {
@@ -73,11 +76,13 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMouseLook()
     {
+        if (isCameraLocked) return;   // This line must be here
+
+        // Normal mouse look code...
         float mouseX = Input.GetAxis("Mouse X") * lookSpeed;
         float mouseY = Input.GetAxis("Mouse Y") * lookSpeed;
 
         transform.Rotate(Vector3.up * mouseX);
-
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
         playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
@@ -91,15 +96,13 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // === Normal Gravity Movement (unchanged) ===
+        // === NORMAL GRAVITY MOVEMENT ===
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
-
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
         float currentSpeed = (carriedCrate != null) ? crateCarrySpeed : walkSpeed;
-
         Vector3 desiredMove = (forward * v + right * h) * currentSpeed;
 
         if (characterController.isGrounded)
@@ -119,21 +122,23 @@ public class PlayerController : MonoBehaviour
     {
         if (playerRb == null) return;
 
-        // Very light float
-        playerRb.AddForce(Vector3.up * 0.7f, ForceMode.Acceleration);
+        // NO constant upward force > only very tiny drift if you want
+        playerRb.AddForce(Vector3.up * 0.4f, ForceMode.Acceleration);   // You can lower to 0.2f or 0f
 
-        // Hold Space to thrust forward (only when near surface)
-        if (Input.GetKey(KeyCode.Space) && IsNearSurface())
+        // SPACEBAR = One-time push forward when near a surface
+        if (Input.GetKeyDown(KeyCode.Space) && IsNearSurface())
         {
-            Vector3 thrustDir = playerCamera.transform.forward;
-            playerRb.AddForce(thrustDir * thrustForce, ForceMode.Acceleration);
+            Vector3 pushDirection = playerCamera.transform.forward;
+            playerRb.AddForce(pushDirection * pushForce, ForceMode.Impulse);
 
-            Debug.Log("Thrusting forward");   // Remove this later
+            Debug.Log("Pushed forward!");
         }
 
-        // Limit speed
+        // Limit max speed
         if (playerRb.linearVelocity.magnitude > zeroGMaxSpeed)
+        {
             playerRb.linearVelocity = playerRb.linearVelocity.normalized * zeroGMaxSpeed;
+        }
 
         KeepUpright();
     }
@@ -144,19 +149,19 @@ public class PlayerController : MonoBehaviour
 
         Vector3[] directions =
         {
-        -transform.up,                    // Floor
-        transform.up,                     // Ceiling
-        -playerCamera.transform.forward,  // Behind camera (very useful)
+        -transform.up,
+        transform.up,
+        -playerCamera.transform.forward,
         playerCamera.transform.forward,
         transform.right,
         -transform.right
-        };
+    };
 
         foreach (Vector3 dir in directions)
         {
             if (Physics.Raycast(pos, dir, surfaceDetectionDistance))
             {
-                Debug.DrawRay(pos, dir * surfaceDetectionDistance, Color.green, 0.1f);
+                Debug.DrawRay(pos, dir * surfaceDetectionDistance, Color.green, 0.2f);
                 return true;
             }
         }
@@ -170,31 +175,31 @@ public class PlayerController : MonoBehaviour
         playerRb.angularVelocity = Vector3.zero;
     }
 
-    private void TryPushOffSurface()
-    {
-        Vector3[] checkDirections =
-    {
-        -transform.up,                    // Down
-        -playerCamera.transform.forward,  // Behind camera
-        playerCamera.transform.forward,
-        transform.right,
-        -transform.right,
-        transform.up
-    };
+    //private void TryPushOffSurface()
+    //{
+    //    Vector3[] checkDirections =
+    //{
+    //    -transform.up,                    // Down
+    //    -playerCamera.transform.forward,  // Behind camera
+    //    playerCamera.transform.forward,
+    //    transform.right,
+    //    -transform.right,
+    //    transform.up
+    //};
 
-        foreach (Vector3 dir in checkDirections)
-        {
-            if (Physics.Raycast(transform.position, dir, out RaycastHit hit, 2.2f))
-            {
-                Vector3 pushDir = hit.normal;
-                playerRb.AddForce(pushDir * pushOffForce, ForceMode.Impulse);
+    //    foreach (Vector3 dir in checkDirections)
+    //    {
+    //        if (Physics.Raycast(transform.position, dir, out RaycastHit hit, 2.2f))
+    //        {
+    //            Vector3 pushDir = hit.normal;
+    //            playerRb.AddForce(pushDir * pushOffForce, ForceMode.Impulse);
 
-                // Nice little spin when pushing off
-                playerRb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
-                return;
-            }
-        }
-    }
+    //            // Nice little spin when pushing off
+    //            playerRb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
+    //            return;
+    //        }
+    //    }
+    //}
 
 
 
@@ -356,32 +361,47 @@ public class PlayerController : MonoBehaviour
 
         playerRb.isKinematic = false;
         playerRb.useGravity = false;
-        playerRb.linearDamping = 1.4f;       // Higher drag = better control
-        playerRb.angularDamping = 5f;        // Strong angular damping
+        playerRb.linearDamping = 1.5f;        // Good control
+        playerRb.angularDamping = 6f;
         playerRb.mass = 1f;
-        playerRb.freezeRotation = true;      // This helps a lot with rotation
+        playerRb.freezeRotation = true;
         playerRb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        // Gentle initial float
-        playerRb.AddForce(Vector3.up * 4f, ForceMode.Impulse);
+        // One initial gentle float upward when entering zero-g
+        playerRb.AddForce(Vector3.up * 5f, ForceMode.Impulse);
 
-        Debug.Log("Zero-G Active - Press SPACE near surfaces to push off");
+        Debug.Log("Zero-G Active > Press SPACE near surfaces to push off");
     }
 
     public void ExitZeroGravity()
     {
+        Debug.Log("ExitZeroGravity() - Restoring normal controls");
+
         isInZeroGravity = false;
 
+        // Re-enable CharacterController
+        if (characterController != null)
+            characterController.enabled = true;
+
+        // Disable / reset Rigidbody
         if (playerRb != null)
         {
             playerRb.useGravity = true;
-            playerRb.isKinematic = true;   // important for CharacterController
-            // Do NOT destroy it unless you want to — keeping it is often safer
+            playerRb.isKinematic = true;
+            playerRb.linearVelocity = Vector3.zero;
         }
 
-        characterController.enabled = true;
+        // Force unlock camera & mouse look
+        SetCameraLocked(false);
+
+        // Reset velocity
         moveVelocity = Vector3.zero;
 
-        Debug.Log("Gravity Restored");
+        Debug.Log("All controls fully restored (WASD + Camera Look)");
+    }
+
+    public void SetCameraLocked(bool locked)
+    {
+        isCameraLocked = locked;
     }
 }
