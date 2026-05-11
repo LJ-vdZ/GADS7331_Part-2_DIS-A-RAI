@@ -68,10 +68,16 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        HandleMouseLook();
+        //HandleMouseLook();
         HandleMovement();
         HandleInteraction();
         UpdateCarriedCrate();
+    }
+
+    private void LateUpdate()
+    {
+        // Always handle mouse look in LateUpdate for smoothest feel
+        HandleMouseLook();
     }
 
     private void HandleMouseLook()
@@ -361,29 +367,24 @@ public class PlayerController : MonoBehaviour
 
         playerRb.isKinematic = false;
         playerRb.useGravity = false;
-        playerRb.linearDamping = 1.5f;        // Good control
+        playerRb.linearDamping = 1.5f;
         playerRb.angularDamping = 6f;
         playerRb.mass = 1f;
         playerRb.freezeRotation = true;
+
+        // THIS IS KEY for smooth camera
         playerRb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        // One initial gentle float upward when entering zero-g
         playerRb.AddForce(Vector3.up * 5f, ForceMode.Impulse);
 
-        Debug.Log("Zero-G Active > Press SPACE near surfaces to push off");
+        Debug.Log("Zero-G Entered - Smooth Camera Mode");
     }
 
     public void ExitZeroGravity()
     {
-        Debug.Log("ExitZeroGravity() - Restoring normal controls");
-
         isInZeroGravity = false;
+        characterController.enabled = true;
 
-        // Re-enable CharacterController
-        if (characterController != null)
-            characterController.enabled = true;
-
-        // Disable / reset Rigidbody
         if (playerRb != null)
         {
             playerRb.useGravity = true;
@@ -391,13 +392,10 @@ public class PlayerController : MonoBehaviour
             playerRb.linearVelocity = Vector3.zero;
         }
 
-        // Force unlock camera & mouse look
         SetCameraLocked(false);
-
-        // Reset velocity
         moveVelocity = Vector3.zero;
 
-        Debug.Log("All controls fully restored (WASD + Camera Look)");
+        Debug.Log("Back to normal - Camera should be smooth");
     }
 
     public void SetCameraLocked(bool locked)
