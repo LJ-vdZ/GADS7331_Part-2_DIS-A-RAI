@@ -9,6 +9,10 @@ public class ZeroGravityZone : MonoBehaviour
     public bool destroyAfterUse = true;
     private bool hasBeenActivated = false;
 
+    [Header("Spawn New Trigger")]
+    public GameObject nextTriggerPrefab;        // Assign the new trigger prefab here
+    public Transform nextTriggerSpawnPoint;     // Where to spawn the new trigger
+
     [Header("References")]
     public HubManager menuManager;
 
@@ -20,52 +24,55 @@ public class ZeroGravityZone : MonoBehaviour
         {
             hasBeenActivated = true;
 
-            Debug.Log("Zero-G Zone Triggered");
+            Debug.Log("Zero-G Zone Triggered - Spawning next trigger");
 
-            // Activate Zero-G on Player
+            // Activate Zero-G
             PlayerController player = other.GetComponent<PlayerController>();
-            if (player != null)
-                player.EnterZeroGravity();
+            if (player != null) player.EnterZeroGravity();
 
-            // Activate all crates
             foreach (var crate in FindObjectsOfType<CrateFloat>())
                 crate.ActivateZeroG();
 
             // Open menu
             if (menuManager != null)
                 menuManager.OpenMainMenu();
-            else
-                Debug.LogWarning("MenuManager not assigned on ZeroGravityZone!");
 
-            // Disable trigger after use
+            // Spawn the next trigger
+            SpawnNextTrigger();
+
+            // Disable this trigger
             if (destroyAfterUse)
             {
                 Collider col = GetComponent<Collider>();
-                if (col != null)
-                    col.enabled = false;
+                if (col != null) col.enabled = false;
             }
         }
     }
 
-    public string GetCode()
+    private void SpawnNextTrigger()
     {
-        return codeToRestoreGravity;
+        if (nextTriggerPrefab != null && nextTriggerSpawnPoint != null)
+        {
+            Instantiate(nextTriggerPrefab, nextTriggerSpawnPoint.position, nextTriggerSpawnPoint.rotation);
+            Debug.Log("Next trigger spawned successfully!");
+        }
+        else
+        {
+            Debug.LogWarning("Next Trigger Prefab or Spawn Point not assigned!");
+        }
     }
+
+    public string GetCode() => codeToRestoreGravity;
 
     public void RestoreGravity()
     {
-        Debug.Log("RestoreGravity() called");
-
-        // Restore Player
+        // Player & Crates
         PlayerController player = FindObjectOfType<PlayerController>();
-        if (player != null)
-            player.ExitZeroGravity();
+        if (player != null) player.ExitZeroGravity();
 
-        // Restore Crates
         foreach (var crate in FindObjectsOfType<CrateFloat>())
             crate.DeactivateZeroG();
 
-        // Unlock camera/menu
         if (menuManager != null)
             menuManager.UnlockEverything();
     }
