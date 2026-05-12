@@ -9,6 +9,7 @@ TagManager:
   - Pickup
   - Crate
   - PushSurface
+  - Lift
   layers:
   - Default
   - TransparentFX
