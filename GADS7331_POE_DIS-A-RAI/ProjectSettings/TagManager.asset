@@ -10,6 +10,7 @@ TagManager:
   - Crate
   - PushSurface
   - Lift
+  - BlackBox
   layers:
   - Default
   - TransparentFX
