@@ -6,7 +6,7 @@ public class GravityRoomController : MonoBehaviour
 
     private Vector3 originalGravity;
 
-    private void Awake() => originalGravity = Physics.gravity;
+    private void Start() => originalGravity = Physics.gravity;
 
     public void SetGravity(bool on)
     {

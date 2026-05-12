@@ -23,7 +23,7 @@ public class LiftController : MonoBehaviour
     private bool isMoving = false;
     private bool isDoorMoving = false;
 
-    private void Awake()
+    private void Start()
     {
         startPosition = transform.position;
         endY = endPoint.position.y;

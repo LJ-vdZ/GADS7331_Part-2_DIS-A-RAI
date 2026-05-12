@@ -11,7 +11,7 @@ public class CodeInput : MonoBehaviour
     private ZeroGravityZone currentZone;
     private bool isActive = false;
 
-    private void Awake()
+    private void Start()
     {
         Debug.Log("CodeInput Script AWAKE");
     }

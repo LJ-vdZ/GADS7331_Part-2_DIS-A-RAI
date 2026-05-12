@@ -4,42 +4,60 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class SecurityBot : MonoBehaviour
 {
-    [Header("Bot Settings")]
+    [Header("Movement")]
     public float patrolSpeed = 2.5f;
-    public float chaseSpeed = 5f;
-    public float detectionRange = 12f;
+    public float chaseSpeed = 5.5f;
+    public float playerDetectionRange = 8f;
+    public float blackBoxDetectionRange = 15f;
+    public float attackRange = 1.8f;
+
+    [Header("Animations")]
+    public Animator animator;
 
     private NavMeshAgent agent;
     private Transform player;
     private Transform blackBox;
+
     private bool isChasing = false;
     private bool isDeactivated = false;
+    private string currentState = "";
 
-    private void Awake()
+    private void Start()        // Changed from Awake to Start
     {
         agent = GetComponent<NavMeshAgent>();
         player = GameObject.FindGameObjectWithTag("Player").transform;
         blackBox = GameObject.FindGameObjectWithTag("BlackBox")?.transform;
+
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
     {
         if (isDeactivated) return;
 
-        if (blackBox != null)
-        {
-            float distanceToBox = Vector3.Distance(transform.position, blackBox.position);
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        float distanceToBox = blackBox != null ? Vector3.Distance(transform.position, blackBox.position) : 999f;
 
-            if (distanceToBox < detectionRange)
-            {
-                isChasing = true;
-            }
+        if (distanceToPlayer < playerDetectionRange || distanceToBox < blackBoxDetectionRange)
+        {
+            isChasing = true;
+        }
+        else
+        {
+            isChasing = false;
         }
 
         if (isChasing)
             ChasePlayer();
         else
             Patrol();
+
+        // Game Over Check
+        if (distanceToPlayer <= attackRange)
+        {
+            GameOver();
+        }
     }
 
     private void ChasePlayer()
@@ -47,34 +65,51 @@ public class SecurityBot : MonoBehaviour
         agent.speed = chaseSpeed;
         if (player != null)
             agent.SetDestination(player.position);
+
+        ChangeAnimationState("Run");
     }
 
     private void Patrol()
     {
         agent.speed = patrolSpeed;
-        if (!agent.hasPath || agent.remainingDistance < 2f)
+
+        if (!agent.hasPath || agent.remainingDistance < 1.5f)
         {
-            Vector3 randomPoint = transform.position + Random.insideUnitSphere * 20f;
+            Vector3 randomPoint = transform.position + Random.insideUnitSphere * 18f;
             NavMeshHit hit;
             if (NavMesh.SamplePosition(randomPoint, out hit, 25f, NavMesh.AllAreas))
             {
                 agent.SetDestination(hit.position);
             }
         }
+
+        ChangeAnimationState("Walk");
     }
 
-    // ====================== POWER CELL HIT DETECTION ======================
+    private void ChangeAnimationState(string newState)
+    {
+        if (currentState == newState) return;
+
+        currentState = newState;
+        animator.ResetTrigger("Walk");
+        animator.ResetTrigger("Run");
+        animator.SetTrigger(newState);
+    }
+
+    private void GameOver()
+    {
+        Debug.Log("GAME OVER - Caught by Security Bot!");
+        Time.timeScale = 0f;   // Pause game
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (isDeactivated) return;
 
-        // Check for Wrong Power Cell
         if (collision.gameObject.CompareTag("WrongPowerCell"))
         {
             Deactivate();
-
-            // Optional: Destroy the power cell after impact
-            Destroy(collision.gameObject, 0.3f);
+            Destroy(collision.gameObject, 0.4f);
         }
     }
 
@@ -85,10 +120,10 @@ public class SecurityBot : MonoBehaviour
         isDeactivated = true;
         agent.enabled = false;
 
-        // Visual feedback
-        //GetComponent<Renderer>()?.material.color = Color.gray;
+        if (animator != null)
+            animator.enabled = false;
 
-        Debug.Log($"{gameObject.name} has been deactivated by Wrong Power Cell!");
+        Debug.Log($"{gameObject.name} has been deactivated!");
     }
 
     public bool IsDeactivated() => isDeactivated;

@@ -16,7 +16,7 @@ public class PressurePlate : MonoBehaviour
     private bool hasBeenActivated = false;      // Once true, stays true until manager deactivates
     private bool isCurrentlyOccupied = false;
 
-    private void Awake()
+    private void Start()
     {
         if (plateRenderer == null)
             Debug.LogWarning("PlateRenderer not assigned on " + gameObject.name);

@@ -10,7 +10,7 @@ public class CrateFloat : MonoBehaviour
     private Rigidbody rb;
     private bool zeroGActive = false;
 
-    private void Awake()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;

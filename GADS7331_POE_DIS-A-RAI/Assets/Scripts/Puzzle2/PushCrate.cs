@@ -8,7 +8,7 @@ public class PushCrate : MonoBehaviour
 
     private Rigidbody rb;
 
-    private void Awake()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.mass = 25f;

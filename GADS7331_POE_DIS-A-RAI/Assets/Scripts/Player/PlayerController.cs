@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
     private float surfaceDetectionDistance = 2f;
 
 
-    private void Awake()
+    private void Start()
     {
         characterController = GetComponent<CharacterController>();
 
