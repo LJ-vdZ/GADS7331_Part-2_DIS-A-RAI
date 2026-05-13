@@ -3,32 +3,31 @@ using UnityEngine;
 public class HubManager : MonoBehaviour
 {
     [Header("Panels")]
-    public GameObject mainMenuPanel;
-    public GameObject shipLevelsPanel;
+    public GameObject mainTerminalPanel;        // Main Terminal UI
+    public GameObject shipLevelsPanel;          // Ship Map Panel (optional)
+    public GameObject criticalSystemsPanel;
     public GameObject codeInputPanel;
 
     [Header("References")]
     public PlayerController playerController;
+    public Terminal terminal;
 
     private bool isMenuOpen = false;
+    private bool tabUnlocked = false;
 
     private void Update()
     {
+        if (!tabUnlocked) return;
+
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             ToggleMainMenu();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Escape) && isMenuOpen)
-        {
-            CloseAllMenus();
         }
     }
 
     private void ToggleMainMenu()
     {
         isMenuOpen = !isMenuOpen;
-
         if (isMenuOpen)
             OpenMainMenu();
         else
@@ -38,50 +37,37 @@ public class HubManager : MonoBehaviour
     public void OpenMainMenu()
     {
         CloseAllMenus();
-        if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
+        if (mainTerminalPanel != null) mainTerminalPanel.SetActive(true);
         isMenuOpen = true;
         LockCamera(true);
     }
 
-    public void OpenShipLevelsPanel()
+    // ====================== BUTTON CALLS ======================
+
+    public void OnShipMapButtonPressed()
     {
-        CloseAllMenus();
-        if (shipLevelsPanel != null) shipLevelsPanel.SetActive(true);
-        LockCamera(true);
+        if (terminal != null)
+            terminal.ShowMapCorruptedDialogue();
     }
 
-    public void OpenGravityCodePanel()
+    public void OnShipAIButtonPressed()
     {
-        CloseAllMenus();
-        if (codeInputPanel != null)
-        {
-            codeInputPanel.SetActive(true);
-
-            CodeInput codeInput = codeInputPanel.GetComponent<CodeInput>();
-            if (codeInput != null)
-            {
-                // We need to know which zone - for now we'll find it
-                ZeroGravityZone zone = FindObjectOfType<ZeroGravityZone>();
-                if (zone != null)
-                    codeInput.StartCodeInput(zone);
-                else
-                    Debug.LogError("No ZeroGravityZone found in scene!");
-            }
-        }
-        LockCamera(true);
+        if (terminal != null)
+            terminal.StartLinkDeviceProcess();
     }
 
     public void CloseAllMenus()
     {
-        if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
+        if (mainTerminalPanel != null) mainTerminalPanel.SetActive(false);
         if (shipLevelsPanel != null) shipLevelsPanel.SetActive(false);
+        if (criticalSystemsPanel != null) criticalSystemsPanel.SetActive(false);
         if (codeInputPanel != null) codeInputPanel.SetActive(false);
 
         isMenuOpen = false;
         LockCamera(false);
     }
 
-    private void LockCamera(bool lockState)
+    public void LockCamera(bool lockState)
     {
         if (playerController != null)
             playerController.SetCameraLocked(lockState);
@@ -92,7 +78,11 @@ public class HubManager : MonoBehaviour
 
     public void UnlockEverything()
     {
+        tabUnlocked = true;
         CloseAllMenus();
-        LockCamera(false);        // This unlocks the camera
+        LockCamera(false);
+        Debug.Log("Tab menu is now unlocked!");
     }
+
+
 }

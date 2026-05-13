@@ -220,6 +220,15 @@ public class PlayerController : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactRange, layerMask))
         {
+            // === TERMINAL INTERACTION ===
+            Terminal terminal = hit.collider.GetComponentInParent<Terminal>();
+            if (terminal != null)
+            {
+                Debug.Log("Terminal detected - Calling Interact()");
+                terminal.Interact();
+                return;
+            }
+
             if (hit.collider.CompareTag("Crate"))
             {
                 Rigidbody crateRb = hit.collider.GetComponentInParent<Rigidbody>();
