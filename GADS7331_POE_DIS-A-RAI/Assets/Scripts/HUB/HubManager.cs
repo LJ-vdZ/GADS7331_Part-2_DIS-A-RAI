@@ -9,7 +9,7 @@ public class HubManager : MonoBehaviour
     public GameObject codeInputPanel;
 
     [Header("Main TAB Menu")]
-    public GameObject mainHubMenuPanel;        // New: This opens when pressing TAB
+    public GameObject mainTabMenuPanel;
 
     [Header("References")]
     public PlayerController playerController;
@@ -40,22 +40,22 @@ public class HubManager : MonoBehaviour
     public void OpenMainTabMenu()
     {
         CloseAllMenus();
-        if (mainHubMenuPanel != null)
+        if (mainTabMenuPanel != null)
         {
-            mainHubMenuPanel.SetActive(true);
+            mainTabMenuPanel.SetActive(true);
             Debug.Log("Main TAB Menu Opened");
         }
         isMenuOpen = true;
         LockCamera(true);
+        LockPlayerMovement(true);        // Added
     }
-
-    // ====================== TERMINAL BUTTON CALLS ======================
 
     public void OpenMainTerminalPanel()
     {
         CloseAllMenus();
         if (mainTerminalPanel != null) mainTerminalPanel.SetActive(true);
         LockCamera(true);
+        LockPlayerMovement(true);        // Added
     }
 
     public void OnShipMapButtonPressed()
@@ -76,10 +76,11 @@ public class HubManager : MonoBehaviour
         if (shipLevelsPanel != null) shipLevelsPanel.SetActive(false);
         if (criticalSystemsPanel != null) criticalSystemsPanel.SetActive(false);
         if (codeInputPanel != null) codeInputPanel.SetActive(false);
-        if (mainHubMenuPanel != null) mainHubMenuPanel.SetActive(false);
+        if (mainTabMenuPanel != null) mainTabMenuPanel.SetActive(false);
 
         isMenuOpen = false;
         LockCamera(false);
+        LockPlayerMovement(false);       // Added
     }
 
     public void LockCamera(bool lockState)
@@ -91,13 +92,19 @@ public class HubManager : MonoBehaviour
         Cursor.lockState = lockState ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
+    // ====================== NEW METHOD (Minimal Addition) ======================
+    private void LockPlayerMovement(bool lockState)
+    {
+        if (playerController != null)
+        {
+            playerController.SetMovementLocked(lockState);
+        }
+    }
+
     public void UnlockEverything()
     {
         tabUnlocked = true;
         CloseAllMenus();
-        LockCamera(false);
         Debug.Log("TAB menu is now fully unlocked!");
     }
-
-
 }

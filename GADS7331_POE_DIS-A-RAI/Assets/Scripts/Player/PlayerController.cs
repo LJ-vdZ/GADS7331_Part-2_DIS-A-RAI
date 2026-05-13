@@ -48,6 +48,8 @@ public class PlayerController : MonoBehaviour
 
     private BlackBox carriedBlackBox = null;
 
+    private bool movementLocked = false;
+
 
     private void Start()
     {
@@ -96,8 +98,20 @@ public class PlayerController : MonoBehaviour
         playerCamera.transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
+    // Add this method
+    public void SetMovementLocked(bool locked)
+    {
+        movementLocked = locked;
+    }
+
     private void HandleMovement()
     {
+        if (movementLocked)
+        {
+            // Still allow mouse look, but no movement
+            return;
+        }
+
         if (isInZeroGravity)
         {
             HandleZeroGMovement();
