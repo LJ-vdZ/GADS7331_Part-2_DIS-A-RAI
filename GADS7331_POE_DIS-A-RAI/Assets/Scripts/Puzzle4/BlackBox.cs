@@ -2,36 +2,50 @@ using UnityEngine;
 
 public class BlackBox : MonoBehaviour
 {
+    [Header("Settings")]
     public Puzzle4Manager puzzleManager;
 
+    private Rigidbody rb;
     private bool canBePickedUp = false;
 
-    private void Update()
+    private void Awake()
     {
-        if (canBePickedUp && Input.GetKeyDown(KeyCode.E))
+        rb = GetComponent<Rigidbody>();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
         {
-            TryPickup();
+            canBePickedUp = true;
         }
     }
 
-    public void EnablePickup()
+    private void OnTriggerExit(Collider other)
     {
-        canBePickedUp = true;
-        Debug.Log("Black Box can now be retrieved!");
-        // Optional: Add glow / particles
+        if (other.CompareTag("Player"))
+        {
+            canBePickedUp = false;
+        }
     }
 
-    private void TryPickup()
+    public void TryPickup(PlayerController player)
     {
+        if (!canBePickedUp) return;
+
         if (puzzleManager != null && puzzleManager.AllBotsDefeated())
         {
-            Debug.Log("Black Box Retrieved! Puzzle Complete!");
-            puzzleManager.CompletePuzzle();
-            gameObject.SetActive(false);
+            Debug.Log("BLACK BOX COLLECTED - PUZZLE COMPLETE!");
+
+            // Attach to player with specific rotation
+            player.PickupBlackBox(this);
+
+            // Hide trigger collider while being carried
+            GetComponent<Collider>().enabled = false;
         }
         else
         {
-            Debug.Log("Bots are still active!");
+            Debug.Log("Cannot pick up yet - Defeat all bots first!");
         }
     }
 }

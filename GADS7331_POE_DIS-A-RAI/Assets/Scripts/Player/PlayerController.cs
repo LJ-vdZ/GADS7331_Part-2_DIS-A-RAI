@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float walkSpeed = 6f;
+    public float walkSpeed = 7f;
     public float crateCarrySpeed = 2.8f;     // Added: Slower speed when carrying crate
     public float gravity = 25f;              // eAdded: Was missing
 
@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour
     private float pushOffForce = 22f;        // Force when pushing off walls/floors
 
     private float surfaceDetectionDistance = 2f;
+
+    private BlackBox carriedBlackBox = null;
 
 
     private void Start()
@@ -153,15 +155,7 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 pos = transform.position;
 
-        Vector3[] directions =
-        {
-        -transform.up,
-        transform.up,
-        -playerCamera.transform.forward,
-        playerCamera.transform.forward,
-        transform.right,
-        -transform.right
-    };
+        Vector3[] directions = { -transform.up, transform.up, -playerCamera.transform.forward, playerCamera.transform.forward, transform.right, -transform.right};
 
         foreach (Vector3 dir in directions)
         {
@@ -180,34 +174,6 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, uprightRot, 12f * Time.deltaTime);
         playerRb.angularVelocity = Vector3.zero;
     }
-
-    //private void TryPushOffSurface()
-    //{
-    //    Vector3[] checkDirections =
-    //{
-    //    -transform.up,                    // Down
-    //    -playerCamera.transform.forward,  // Behind camera
-    //    playerCamera.transform.forward,
-    //    transform.right,
-    //    -transform.right,
-    //    transform.up
-    //};
-
-    //    foreach (Vector3 dir in checkDirections)
-    //    {
-    //        if (Physics.Raycast(transform.position, dir, out RaycastHit hit, 2.2f))
-    //        {
-    //            Vector3 pushDir = hit.normal;
-    //            playerRb.AddForce(pushDir * pushOffForce, ForceMode.Impulse);
-
-    //            // Nice little spin when pushing off
-    //            playerRb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
-    //            return;
-    //        }
-    //    }
-    //}
-
-
 
     private void StickToPlatform()
     {
@@ -262,6 +228,15 @@ public class PlayerController : MonoBehaviour
                     AttachCrate(hit.transform);
                     return;
                 }
+            }
+
+            // === BLACK BOX PICKUP ===
+            BlackBox blackBox = hit.collider.GetComponent<BlackBox>() ?? hit.collider.GetComponentInParent<BlackBox>();
+
+            if (blackBox != null)
+            {
+                blackBox.TryPickup(this);
+                return;
             }
 
             Rigidbody rb = hit.collider.GetComponentInParent<Rigidbody>();
@@ -373,7 +348,7 @@ public class PlayerController : MonoBehaviour
         playerRb.freezeRotation = true;
 
         // THIS IS KEY for smooth camera
-        playerRb.interpolation = RigidbodyInterpolation.Interpolate;
+        //playerRb.interpolation = RigidbodyInterpolation.Interpolate;
 
         playerRb.AddForce(Vector3.up * 5f, ForceMode.Impulse);
 
@@ -401,5 +376,27 @@ public class PlayerController : MonoBehaviour
     public void SetCameraLocked(bool locked)
     {
         isCameraLocked = locked;
+    }
+
+    public void PickupBlackBox(BlackBox box)
+    {
+        carriedBlackBox = box;
+
+        Rigidbody rb = box.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+
+        box.transform.SetParent(carryAttachPoint);
+
+        box.transform.localPosition = new Vector3(0, 0.5f, 0f);   // Raised + slightly forward
+
+        // Custom rotation: 260 degrees on X axis
+        box.transform.localRotation = Quaternion.Euler(260f, -10f, 0f);
+
+        // Optional: Slightly adjust position if needed
+        // box.transform.localPosition = new Vector3(0, 0.2f, 0.3f);
     }
 }
