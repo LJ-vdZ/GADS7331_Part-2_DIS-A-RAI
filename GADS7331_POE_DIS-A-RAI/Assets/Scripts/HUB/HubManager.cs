@@ -2,11 +2,14 @@ using UnityEngine;
 
 public class HubManager : MonoBehaviour
 {
-    [Header("Panels")]
-    public GameObject mainTerminalPanel;        // Main Terminal UI
-    public GameObject shipLevelsPanel;          // Ship Map Panel (optional)
+    [Header("Terminal Panels")]
+    public GameObject mainTerminalPanel;
+    public GameObject shipLevelsPanel;
     public GameObject criticalSystemsPanel;
     public GameObject codeInputPanel;
+
+    [Header("Main TAB Menu")]
+    public GameObject mainHubMenuPanel;        // New: This opens when pressing TAB
 
     [Header("References")]
     public PlayerController playerController;
@@ -21,28 +24,39 @@ public class HubManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            ToggleMainMenu();
+            ToggleMainTabMenu();
         }
     }
 
-    private void ToggleMainMenu()
+    private void ToggleMainTabMenu()
     {
         isMenuOpen = !isMenuOpen;
         if (isMenuOpen)
-            OpenMainMenu();
+            OpenMainTabMenu();
         else
             CloseAllMenus();
     }
 
-    public void OpenMainMenu()
+    public void OpenMainTabMenu()
     {
         CloseAllMenus();
-        if (mainTerminalPanel != null) mainTerminalPanel.SetActive(true);
+        if (mainHubMenuPanel != null)
+        {
+            mainHubMenuPanel.SetActive(true);
+            Debug.Log("Main TAB Menu Opened");
+        }
         isMenuOpen = true;
         LockCamera(true);
     }
 
-    // ====================== BUTTON CALLS ======================
+    // ====================== TERMINAL BUTTON CALLS ======================
+
+    public void OpenMainTerminalPanel()
+    {
+        CloseAllMenus();
+        if (mainTerminalPanel != null) mainTerminalPanel.SetActive(true);
+        LockCamera(true);
+    }
 
     public void OnShipMapButtonPressed()
     {
@@ -62,6 +76,7 @@ public class HubManager : MonoBehaviour
         if (shipLevelsPanel != null) shipLevelsPanel.SetActive(false);
         if (criticalSystemsPanel != null) criticalSystemsPanel.SetActive(false);
         if (codeInputPanel != null) codeInputPanel.SetActive(false);
+        if (mainHubMenuPanel != null) mainHubMenuPanel.SetActive(false);
 
         isMenuOpen = false;
         LockCamera(false);
@@ -81,7 +96,7 @@ public class HubManager : MonoBehaviour
         tabUnlocked = true;
         CloseAllMenus();
         LockCamera(false);
-        Debug.Log("Tab menu is now unlocked!");
+        Debug.Log("TAB menu is now fully unlocked!");
     }
 
 

@@ -10,26 +10,31 @@ public class Terminal : MonoBehaviour
     public DialogueData mapCorruptedDialogue;
     public DialogueData linkSuccessDialogue;
 
-    private bool hasLinkedDevice = false;
-    private bool playerInTrigger = false;
-
     [Header("Objects to Destroy")]
     public GameObject textObjectToDestroy;
 
+    private bool hasLinkedDevice = false;
+    private bool playerInTrigger = false;
+
     private void Start()
     {
-        // Show intro dialogue at game start + lock camera
         if (introDialogue != null && DialogueSystem.Instance != null)
         {
-            // Lock camera before showing dialogue
+            // Lock camera for intro dialogue
             if (hubManager != null)
                 hubManager.LockCamera(true);
 
-            DialogueSystem.Instance.ShowDialogue(introDialogue, () =>
-            {
-                //Unlock camera after player closes intro dialogue
-                hubManager.LockCamera(false);
-            });
+            DialogueSystem.Instance.ShowDialogue(introDialogue, OnIntroDialogueClosed);
+        }
+    }
+
+    // Called after player clicks Continue on intro dialogue
+    private void OnIntroDialogueClosed()
+    {
+        if (hubManager != null)
+        {
+            hubManager.LockCamera(false);   // Unlock camera
+            Debug.Log("Intro dialogue closed - Camera unlocked");
         }
     }
 
@@ -55,16 +60,28 @@ public class Terminal : MonoBehaviour
 
     public void Interact()
     {
+        Debug.Log("Terminal -> Opening Terminal Panel");
+
+        if (hasLinkedDevice)
+        {
+            Debug.Log("Device already linked.");
+            return;
+        }
+
         if (hubManager != null)
-            hubManager.OpenMainMenu();        // Opens main terminal panel
+        {
+            hubManager.OpenMainTerminalPanel();     // This should open the terminal UI, not the TAB menu
+        }
+        else
+        {
+            Debug.LogError("HubManager is not assigned on Terminal!");
+        }
     }
 
     public void ShowMapCorruptedDialogue()
     {
         if (mapCorruptedDialogue != null && DialogueSystem.Instance != null)
-        {
             DialogueSystem.Instance.ShowDialogue(mapCorruptedDialogue);
-        }
     }
 
     public void StartLinkDeviceProcess()
@@ -77,7 +94,6 @@ public class Terminal : MonoBehaviour
         {
             DialogueSystem.Instance.ShowDialogue(linkSuccessDialogue, () =>
             {
-                // After player clicks Continue on success dialogue
                 if (hubManager != null)
                     hubManager.UnlockEverything();
 
@@ -90,9 +106,6 @@ public class Terminal : MonoBehaviour
     private void DestroyTextObject()
     {
         if (textObjectToDestroy != null)
-        {
             Destroy(textObjectToDestroy);
-            Debug.Log("3D Text object destroyed along with terminal");
-        }
     }
 }

@@ -35,7 +35,7 @@ public class ZeroGravityZone : MonoBehaviour
 
             // Open menu
             if (menuManager != null)
-                menuManager.OpenMainMenu();
+                menuManager.OpenMainTabMenu();
 
             // Spawn the next trigger
             SpawnNextTrigger();
