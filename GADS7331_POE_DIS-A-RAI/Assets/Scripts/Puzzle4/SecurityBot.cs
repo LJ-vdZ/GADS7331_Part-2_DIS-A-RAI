@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class SecurityBot : MonoBehaviour
@@ -99,7 +100,12 @@ public class SecurityBot : MonoBehaviour
     private void GameOver()
     {
         Debug.Log("GAME OVER - Caught by Security Bot!");
-        Time.timeScale = 0f;   // Pause game
+
+        SceneManager.LoadScene("GameOver");
+
+        //Time.timeScale = 0f;   // Pause game
+
+        //SceneManager.LoadScene("GameOver");
     }
 
     private void OnCollisionEnter(Collision collision)
