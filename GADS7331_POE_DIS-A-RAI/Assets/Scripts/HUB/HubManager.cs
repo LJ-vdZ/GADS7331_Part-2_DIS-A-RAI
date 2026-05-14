@@ -107,4 +107,49 @@ public class HubManager : MonoBehaviour
         CloseAllMenus();
         Debug.Log("TAB menu is now fully unlocked!");
     }
+
+    public void OpenCodeInputPanel()
+    {
+        CloseAllMenus();
+
+        // Activate parent panels first
+        if (mainTabMenuPanel != null)
+            mainTabMenuPanel.SetActive(true);
+
+        if (codeInputPanel != null)
+        {
+            codeInputPanel.SetActive(true);
+
+            // Small delay to ensure the panel hierarchy is fully active
+            Invoke(nameof(ActivateCodeInputLogic), 0.05f);
+        }
+
+        LockCamera(true);
+        LockPlayerMovement(true);
+    }
+
+    // Helper method
+    private void ActivateCodeInputLogic()
+    {
+        if (codeInputPanel == null) return;
+
+        CodeInput codeInput = codeInputPanel.GetComponent<CodeInput>();
+        if (codeInput != null)
+        {
+            ZeroGravityZone zone = FindObjectOfType<ZeroGravityZone>();
+            if (zone != null)
+            {
+                codeInput.StartCodeInput(zone);
+                Debug.Log("CodeInput successfully started");
+            }
+            else
+            {
+                Debug.LogError("ZeroGravityZone not found in scene!");
+            }
+        }
+        else
+        {
+            Debug.LogError("CodeInput script not found on CodeInputPanel!");
+        }
+    }
 }

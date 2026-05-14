@@ -11,7 +11,7 @@ public class CodeInput : MonoBehaviour
     private ZeroGravityZone currentZone;
     private bool isActive = false;
 
-    private void Start()
+    private void Awake()
     {
         Debug.Log("CodeInput Script AWAKE");
     }
@@ -112,5 +112,15 @@ public class CodeInput : MonoBehaviour
     private void CancelInput()
     {
         ClosePanel();
+    }
+
+    private void OnEnable()
+    {
+        Debug.Log("CodeInputPanel OnEnable - Ready");
+        if (codeInputField != null)
+        {
+            codeInputField.text = "";
+            codeInputField.ActivateInputField();
+        }
     }
 }
