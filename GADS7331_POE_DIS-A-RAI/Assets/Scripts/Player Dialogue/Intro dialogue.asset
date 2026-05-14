@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c47aac1fd33b8544ebc2368b64eaa4ae, type: 3}
   m_Name: Intro dialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ec61f5805efb41b4ebdd3fbbbfb2882b, type: 3}
   alertTitle: Recovery Specialist
   dialogueText: "Alright\u2026 I\u2019m aboard The Erebos. No crew. No signs of damage\u2026
     strange. Voyage said the blackbox should still be somewhere on the ship. I need
