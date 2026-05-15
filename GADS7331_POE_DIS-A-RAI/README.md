@@ -25,9 +25,12 @@ This repository now aligns with the high concept document (`ST10435229_GADS7331_
 
 1. Clone or download this repository.
 2. Install project dependencies (Unity version, packages, and tools listed in `setup.md`).
+3. Pull and run the required Ollama model from Windows PowerShell.
 3. Install and start Ollama locally.
-4. Pull and run the required Ollama model from Windows PowerShell.
-5. Launch the Unity project and confirm API communication with the local Ollama endpoint.
+    - Open Windows PowerShell
+    - Type: ollama pull llama3 to download model
+    - Type: ollama serve
+4. Launch the Unity project and confirm API communication with the local Ollama endpoint.
 
 Detailed step-by-step instructions are in `setup.md`.
 
@@ -65,9 +68,5 @@ Why local LLM runtime is used:
 - keeps player input processing local
 - avoids recurring cloud inference costs during development
 
-## Credits
-
-Project author: `ST10435229`  
-Course context: `GADS7331`
 
 Add contributors, asset attributions, and third-party acknowledgements here as the project grows.
