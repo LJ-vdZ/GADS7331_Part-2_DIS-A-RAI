@@ -52,6 +52,9 @@ public class PlayerController : MonoBehaviour
 
     private bool movementLocked = false;
 
+    // === NEW: Interaction Control ===
+    private bool isInteractionEnabled = true;
+
 
     private void Start()
     {
@@ -105,6 +108,15 @@ public class PlayerController : MonoBehaviour
     {
         movementLocked = locked;
     }
+
+    // ===================== NEW METHODS =====================
+    public void SetInteractionEnabled(bool enabled)
+    {
+        isInteractionEnabled = enabled;
+    }
+
+    public bool IsInteractionEnabled() => isInteractionEnabled;
+    // =======================================================
 
     private void HandleMovement()
     {
@@ -219,6 +231,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleInteraction()
     {
+        if(!isInteractionEnabled) return;   // Prevents interaction when disabled
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (isCarrying || carriedCrate != null)

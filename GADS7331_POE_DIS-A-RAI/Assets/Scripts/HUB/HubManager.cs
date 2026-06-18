@@ -45,9 +45,31 @@ public class HubManager : MonoBehaviour
             mainTabMenuPanel.SetActive(true);
             Debug.Log("Main TAB Menu Opened");
         }
+
         isMenuOpen = true;
         LockCamera(true);
         LockPlayerMovement(true);        // Added
+
+        // Disable player interaction while menu is open. do not interact with objects when typing
+        if (playerController != null)
+            playerController.SetInteractionEnabled(false);
+    }
+
+    public void CloseAllMenus()
+    {
+        if (mainTerminalPanel != null) mainTerminalPanel.SetActive(false);
+        if (shipLevelsPanel != null) shipLevelsPanel.SetActive(false);
+        if (criticalSystemsPanel != null) criticalSystemsPanel.SetActive(false);
+        if (codeInputPanel != null) codeInputPanel.SetActive(false);
+        if (mainTabMenuPanel != null) mainTabMenuPanel.SetActive(false);
+
+        isMenuOpen = false;
+        LockCamera(false);
+        LockPlayerMovement(false);       // Added
+
+        // Re-enable player interaction when menu is closed. can interact with objects again
+        if (playerController != null)
+            playerController.SetInteractionEnabled(true);
     }
 
     public void OpenMainTerminalPanel()
@@ -70,18 +92,6 @@ public class HubManager : MonoBehaviour
             terminal.StartLinkDeviceProcess();
     }
 
-    public void CloseAllMenus()
-    {
-        if (mainTerminalPanel != null) mainTerminalPanel.SetActive(false);
-        if (shipLevelsPanel != null) shipLevelsPanel.SetActive(false);
-        if (criticalSystemsPanel != null) criticalSystemsPanel.SetActive(false);
-        if (codeInputPanel != null) codeInputPanel.SetActive(false);
-        if (mainTabMenuPanel != null) mainTabMenuPanel.SetActive(false);
-
-        isMenuOpen = false;
-        LockCamera(false);
-        LockPlayerMovement(false);       // Added
-    }
 
     public void LockCamera(bool lockState)
     {

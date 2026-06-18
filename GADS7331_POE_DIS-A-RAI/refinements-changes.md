@@ -110,6 +110,17 @@ If the player asks how to play or any questions related to the controls and not 
 
 - **Why it changed:** A playtester discovered that asking JAI for help could lead to **over-explaining the entire progression** instead of answering a **controls-only** question. Feedback also called for **clearer communication at the start** on how to interact; this routes **mechanical** questions to a **fixed, in-character control summary** while keeping **narrative and puzzle guidance** separate.
 - **Impact:** JAI should answer **WASD / look / sprint / interact / toss** questions briefly and in voice, without spoiling later rooms.
+
+### JAI / dialogue UI — Enter key submit and advance (post-event feedback)
+
+- **Change type:** UI / UX + Technical
+- **What changed:** **Scripts** for the **JAI chat** and **dialogue UI** were updated so players can press **Enter** to:
+  - **Advance to the next line** of dialogue (instead of only clicking the on-screen button with the mouse), and
+  - **Send** their typed message **to JAI** (instead of only clicking the on-screen button with the mouse).
+  **Mouse clicks on the buttons still work**—Enter is an additional input path.
+- **Why it changed:** **Both playtesters** suggested **Enter** for these actions so they would not have to **move the cursor to the button every time**; this was a **recurring theme** in post-event feedback (see `feedback-summary.md`).
+- **Impact:** Faster back-and-forth with JAI and less friction during dialogue; better fit for keyboard-first play during puzzle focus.
+
 ---
 
 ## Pending Updates
