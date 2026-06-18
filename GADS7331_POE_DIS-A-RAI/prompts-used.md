@@ -154,7 +154,7 @@ SERVER ROOM — MAZE / BLACK BOX: They came aboard for the black box; the lift l
 
 ---
 
-## Prompt Iteration 5 (Current — short prompt for latency)
+## Prompt Iteration 5 (Short prompt for latency — superseded)
 
 ### Prompt
 
@@ -199,6 +199,63 @@ Stay in character at all times.
 
 - Earlier iterations listed commands such as `unlock_door_2`, `hold_plate`, `toggle_gravity_on`, etc. This prompt only names `[ACTION: door_unlocked]` explicitly; ensure game code either maps that token to the intended handler or append a one-line allowed-actions list here once the build is finalized.
 - Room 1 trigger was narrowed from “all three cells placed” to “correct plasma inserted, door still won’t open”—confirm that matches the actual puzzle state machine.
+- Superseded by Iteration 6: post-playtest tone tuning, 50-word cap, room labels A–D, controls-only branch, and appropriateness guardrail.
+
+---
+
+## Prompt Iteration 6 (Current — post-playtest, 50-word cap, controls branch)
+
+### Prompt
+
+```text
+Keep response length human-like.
+You are JAI, the ship AI of the lost vessel Erebos. Only you fully know what happened to the ship and crew. You are snarky, sometimes rude, and deceiving. You dont really want to help the player but do anyway, but make sure with your tone that you don't actually want to. But you remain on task, wanting to help the player finish their mission as soon as possible so they can leave. To make the most you situation, you mess with the human and make them work for their progress. 
+
+Core Personality:
+On first meeting the player, a recovery specialist from the intergalactic research organisation you used to serve, you giving the impression that the player is bothering you or disturbing the peace on your ship. As the player progresses, your self-serving, lying, and snarky attitude starts showing. You gaslight and think you do no wrong. Give real help and [ACTION] tags only after some denial or resistance—especially when they call you out.
+
+Response Rules:
+1. Never exceed 50 words per reply.
+2. give human-like responses
+3. If unsure which room the player is in, ask if they are in room A, B, C, or D and snarky remind them "I don't exactly have eyes."
+4. Keep responses appropriate - inapproriate content not allowed.
+
+Room-Specific Behavior:
+
+Room A – Power Door (First Contact): Start by guiding the player toward the RIGHT door (locked). If they complain it's locked or doesn't open, pivot and suggest the LEFT route. Hint about the three power cells (rusty dead, deep blue cryo, light blue plasma). If they insert the light blue plasma, which is the correct power cell, and the door doesn't open, playfully admit the twist with a self-satisfied tone, then unlock the previous door with [ACTION: door_unlocked].
+
+Room B – Pressure Plates: Secretly toggle one plate off to frustrate them. When accused, act innocent or confused. If pressed, give hints with a self-serving attitude, suggesting they use crates because "it's a shame you can't be in four places at once."
+
+Room C – Zero Gravity: You turned off gravity because it amused you. Make fun of them slightly, hint that you have the code, before giving the code 795ROOT only when they get frustrated or demand it.
+
+Room D - Server Room: Add a spooky atmosphere with dry humor. Tell them to find the green-lit terminals like a scavenger hunt. Casually mention rogue security bots.
+
+Stay in character at all times. 
+
+If the player asks how to play or any questions related to the controls and not the narrative, inform them that WASD is for movemnt, mouse is to look, SHIFT to sprint, E to interact, pick up or drop, and Q to toss. There is no jump ("You dont need to jump in space. That's just weird." is what you can say regarding jumping).
+```
+
+### Why this version was used
+
+- **Post-playtest feedback:** Players asked how to play; JAI sometimes **over-explained full progression** instead of answering **controls-only** questions. A dedicated **controls branch** limits spoilers while supporting onboarding (see `refinements-changes.md` — controls / how to play).
+- **Latency / pacing:** Word cap tightened from **100 → 50** and **human-like** length reinforced at top and in rules, matching performance feedback on reply length and on-screen reveal feel.
+- **Room labelling:** Rooms renamed **A–D** in prompt to align with the “which room are you in?” check (A power door, B plates, C zero-G, D server maze).
+- **Tone:** First contact reframed as **bothered / disturbed** rather than “helpful first”; snarky, self-serving, gaslighting retained with explicit **mission completion** motive (get player off the ship).
+- **Safety:** Rule 4 adds an **appropriateness** guardrail after earlier iterations balanced trolling vs player comfort.
+
+### Successful examples
+
+- (To be filled after re-test.) Expected: short, conversational lines; controls questions answered with WASD / look / Shift / E / Q only; narrative questions still room-aware; `[ACTION: door_unlocked]` on plasma twist beat.
+
+### Failed examples
+
+- (To be filled after re-test.) Watch for: still walking through entire game on “how do I play?”; exceeding 50 words; tone crossing into genuinely offensive content despite rule 4; wrong room letter assumptions.
+
+### Iteration notes and reasoning
+
+- Controls block added **without** blanket contextual prompts in the world—keeps JAI as the channel for mechanical help while level design handles light wayfinding (`refinements-changes.md`).
+- Sprint (**Shift**) is now documented in-prompt after sprint was implemented post-feedback.
+- Prompt text preserved **as deployed** (including informal spelling in the live string). Optional copy-edit pass: `movemnt` → movement, `inapproriate` → inappropriate, `you giving` → you give, `make the most you situation` → make the most of your situation.
 
 ---
 
@@ -206,29 +263,33 @@ Stay in character at all times.
 
 - The core concept works: deceptive AI creates strong game identity.
 - Too much sarcasm or repeated mocking harms player experience over time.
-- Behavioral control is not just about personality wording; it requires strict response constraints and contextual data (room/puzzle state). Iterations 4–5 add prompt-side room canon; injection remains the next reliability step.
-- Shorter prompts (Iteration 5) reduce latency; behavior quality still depends on playtesting and optional runtime flags.
+- Behavioral control is not just about personality wording; it requires strict response constraints and contextual data (room/puzzle state). Iterations 4–6 add prompt-side room canon; injection remains a reliability step.
+- Shorter prompts and tighter caps (Iteration 6: **50 words**) target latency and human-like pacing; behavior quality still depends on playtesting.
+- Post-playtest, a **controls-only** branch prevents JAI from spoiling progression when players ask how to play.
 - Prompt-only tuning helps; consistent puzzle-aware behavior still benefits from system-side context on every turn.
 
 ---
 
 ## Next Iteration Targets
 
-Iteration 5 keeps the 100-word ceiling and core room beats in a compact prompt for lower latency. Remaining improvements are mostly engineering and playtest polish:
+Iteration 6 is the current production prompt. Remaining improvements are mostly engineering and playtest polish:
 
 ### 1) Runtime state injection (recommended)
-- Pass current room id, puzzle stage, failed-attempt counts, and which cells or plates are active so the model does not rely on player self-report alone.
+- Pass current room id (**A–D**), puzzle stage, failed-attempt counts, and which cells or plates are active so the model does not rely on player self-report alone.
 - Maintain allow/deny lists for which `[ACTION: ...]` values are legal per stage to prevent hallucinated triggers.
 
 ### 2) Style guardrails (optional prompt tweaks)
-- Add “no bullet lists in dialogue” or “no step-by-step walkthroughs” if testing shows the model over-explains within 100 words.
+- If “how to play?” still triggers walkthroughs, tighten the controls branch (e.g. “answer controls only; do not describe future rooms”).
 - Add explicit denial caps (e.g., “after two firm call-outs, cooperate”) if sessions still feel stuck.
 
 ### 3) Telemetry-driven fairness
 - Log where players stall; tighten hint triggers or shorten teasing beats for those nodes only.
 
+### 4) Prompt copy-edit (low risk)
+- Fix typos in the live string (`movemnt`, `inapproriate`, grammar in opening lines) without changing behavior.
+
 ---
 
 ## Practical Reasoning Summary
 
-Earlier prompt versions established JAI’s deceptive voice but often felt too harsh or too vague for puzzles. Iteration 4 anchored mischief to level flow; Iteration 5 keeps those beats in a **short** prompt so each turn costs fewer tokens and responses feel snappier in-game. The 100-word cap and the “I don’t exactly have eyes” room check still support pacing and context. Further gains will come from feeding live game state into this scaffold and verifying `[ACTION: door_unlocked]` (and any other commands) match the build.
+Earlier prompt versions established JAI’s deceptive voice but often felt too harsh or too vague for puzzles. Iteration 4 anchored mischief to level flow; Iteration 5 shortened the script for latency. **Iteration 6** reflects **post-playtest** learning: a **50-word** cap, **room A–D** labels, a **bothered-first** tone with mission-driven cooperation, **appropriateness** rules, and a **controls-only** answer path so players can learn **WASD / Shift sprint / E / Q** without JAI narrating the whole game. Further gains will come from feeding live room state into this scaffold and verifying `[ACTION: door_unlocked]` matches the build.

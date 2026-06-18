@@ -91,8 +91,25 @@ Changes made in response to post-event playtest feedback (see `feedback-summary.
 - **What changed:** **Colliders** for the **power cell slots** were **adjusted and lowered**, as suggested by a playtester, so a cell **snaps into place** when the player aims at the **empty space** in the slot rather than having to aim **up at the physical pillar** of the slot housing.
 - **Why it changed:** Playtest feedback reported that **aiming and snapping** felt misaligned—the interaction volume did not match where players naturally pointed when inserting a cell.
 - **Impact:** Inserting power cells should feel more intuitive and less fiddly; the snap target should match the visible “gap” in each slot.
-- **Follow-up actions:** Re-test all three cell types in each slot; confirm snap still works from reasonable approach angles.
 
+### Player movement — sprint (Shift) (post-event feedback)
+
+- **Change type:** Gameplay + UX
+- **What changed:** **Sprint logic** was added. Players can now **sprint while holding Shift**, a common default for sprint in many games.
+- **Why it changed:** During playtesting, **both attendees tried to sprint** but **could not**; they suggested adding sprint because default **walk speed felt slow** and **Shift** is a **standard control** for sprint. This was also a **recurring theme** in post-event feedback (see `feedback-summary.md`).
+- **Impact:** Movement across larger spaces (e.g. hangar and corridors) should feel less sluggish; controls better match player expectations on first try.
+
+### JAI system prompt — controls / how to play (post-event feedback)
+
+- **Change type:** AI Prompting + UX + Gameplay
+- **What changed:** The **JAI system prompt** was extended so players can ask **how to play** or about **controls** without JAI **spelling out the full game progression**. The following block was added to the prompt:
+
+```text
+If the player asks how to play or any questions related to the controls and not the narrative, inform them that WASD is for movemnt, mouse is to look, SHIFT to sprint, E to interact, pick up or drop, and Q to toss. There is no jump ("You dont need to jump in space. That's just weird." is what you can say regarding jumping).
+```
+
+- **Why it changed:** A playtester discovered that asking JAI for help could lead to **over-explaining the entire progression** instead of answering a **controls-only** question. Feedback also called for **clearer communication at the start** on how to interact; this routes **mechanical** questions to a **fixed, in-character control summary** while keeping **narrative and puzzle guidance** separate.
+- **Impact:** JAI should answer **WASD / look / sprint / interact / toss** questions briefly and in voice, without spoiling later rooms.
 ---
 
 ## Pending Updates

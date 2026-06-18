@@ -13,10 +13,20 @@ public class DialogueSystem : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public Button continueButton;
 
+    private System.Action currentOnContinue;
+
     private void Awake()
     {
         Instance = this;
         dialoguePanel.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (dialoguePanel.activeSelf && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+        {
+            CloseDialogue();
+        }
     }
 
     public void ShowDialogue(DialogueData data, System.Action onContinue = null)
@@ -34,11 +44,17 @@ public class DialogueSystem : MonoBehaviour
         if (dialogueText != null)
             dialogueText.text = data.dialogueText;
 
+        currentOnContinue = onContinue;
+
         continueButton.onClick.RemoveAllListeners();
-        continueButton.onClick.AddListener(() =>
-        {
-            dialoguePanel.SetActive(false);
-            onContinue?.Invoke();
-        });
+        //continueButton.onClick.AddListener(() => {dialoguePanel.SetActive(false); onContinue?.Invoke();});
+        continueButton.onClick.AddListener(() => { CloseDialogue(); });
+    }
+
+    private void CloseDialogue()
+    {
+        dialoguePanel.SetActive(false);
+        currentOnContinue?.Invoke();
+        currentOnContinue = null;
     }
 }
