@@ -5,8 +5,10 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 7f;
-    public float crateCarrySpeed = 2.8f;     // Added: Slower speed when carrying crate
-    public float gravity = 25f;              // eAdded: Was missing
+    public float crateCarrySpeed = 2.8f;    
+    public float gravity = 25f;
+
+    public float sprintSpeed = 12f;
 
     [Header("Camera")]
     public Camera playerCamera;
@@ -124,7 +126,12 @@ public class PlayerController : MonoBehaviour
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
-        float currentSpeed = (carriedCrate != null) ? crateCarrySpeed : walkSpeed;
+        //sprint logic when not carrying crate
+        bool isSprinting = (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && (h != 0 || v != 0);
+        float currentSpeed = (carriedCrate != null) ? crateCarrySpeed : (isSprinting ? sprintSpeed : walkSpeed);
+
+        //float currentSpeed = (carriedCrate != null) ? crateCarrySpeed : walkSpeed;
+
         Vector3 desiredMove = (forward * v + right * h) * currentSpeed;
 
         if (characterController.isGrounded)
