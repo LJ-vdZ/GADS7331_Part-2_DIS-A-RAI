@@ -1,16 +1,13 @@
 # Critical Engagement With Feedback
 
-**Purpose:** Move from raw capture (see `feedback-summary.md`) to reasoned judgment: what the feedback implies, how much weight it carries, and what—if anything—should change in the project.
-
-**Target length (when complete):** approximately 400–600 words for the analytical core (expanded **Final Judgement** below may push total length slightly upward if markers count the whole file).
-
-**Status:** *Draft complete* — **Final Judgement** extended with explicit outcomes and reflection.
-
 ---
 
 ## What did I expect?
 
 Before the session I expected **polish and friction** comments rather than a full redesign: **sprint** (Shift), **clearer UI** against busy backgrounds, **more SFX**, **stronger canister-hit VFX**, **LLM latency**, **smoother platform motion**, and a **TAB / elevator** conflict. I also assumed attention would centre on the **hangar environment** and **JAI**—the LLM dialogue—as the game’s most visible hooks.
+
+**Did your expectations align with the actual feedback?**  
+**Partly.** Several predictions matched what **both** playtesters raised—**sprint**, **LLM speed / stack concerns**, **hangar orientation and scale**, **first-puzzle clarity**, and **UI friction** around JAI (including **Enter** instead of repeated mouse clicks)—and **environment** plus **JAI** did draw the most attention. I was **wrong or only half-right** on other guesses: **no one** mentioned **extra SFX**, **canister VFX**, **jerky elevator motion**, or the **TAB / elevator** clash, while feedback went **further** than I expected on **wayfinding**, **power-cell colliders**, and **how players use JAI** (e.g. **controls** questions and a **persistent output** UI).
 
 ---
 
@@ -57,13 +54,3 @@ Critique of an **LLM-driven** character is **not** like reviewing a static scrip
 Post-event feedback from **two attendees** (see `feedback-summary.md`).
 
 ---
-
-## Revision history
-
-| Date | Change |
-|------|--------|
-| — | Created document structure; analytical body pending |
-| — | Restructured headings: expectations, surprise, ignored/deferred items, feasibility, final judgement |
-| — | Populated “What did I expect?” (anticipated feedback + attention areas) |
-| — | Expanded **Final Judgement**: refinements adopted, items declined, reflection on critique in AI-driven development |
-| — | Added surprise (controls/how-to-play via JAI); declined full corner feed, noted Tab indicator compromise; aligned Final Judgement |
