@@ -18,6 +18,8 @@ public class HubManager : MonoBehaviour
     private bool isMenuOpen = false;
     private bool tabUnlocked = false;
 
+    public GameObject tabPanel;
+
     private void Update()
     {
         if (!tabUnlocked) return;
@@ -43,6 +45,9 @@ public class HubManager : MonoBehaviour
         if (mainTabMenuPanel != null)
         {
             mainTabMenuPanel.SetActive(true);
+
+            tabPanel.SetActive(false);
+
             Debug.Log("Main TAB Menu Opened");
         }
 
@@ -63,6 +68,8 @@ public class HubManager : MonoBehaviour
         if (codeInputPanel != null) codeInputPanel.SetActive(false);
         if (mainTabMenuPanel != null) mainTabMenuPanel.SetActive(false);
 
+        tabPanel.SetActive(true);
+
         isMenuOpen = false;
         LockCamera(false);
         LockPlayerMovement(false);       // Added
@@ -75,6 +82,9 @@ public class HubManager : MonoBehaviour
     public void OpenMainTerminalPanel()
     {
         CloseAllMenus();
+
+        tabPanel.SetActive(false);
+
         if (mainTerminalPanel != null) mainTerminalPanel.SetActive(true);
         LockCamera(true);
         LockPlayerMovement(true);        // Added
