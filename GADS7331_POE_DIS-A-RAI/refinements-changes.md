@@ -85,6 +85,14 @@ Changes made in response to post-event playtest feedback (see `feedback-summary.
 - **Why it changed:** Feedback called for **light orientation** without making every interactable shout for attention; the cupboard used **architectural funneling** only. The terminal remained a **critical first interaction**, so it received **stronger framing plus an explicit prompt** once missed interactions showed up in playtests.
 - **Impact:** Players should be nudged toward the **power-cell area** more naturally; the **terminal** should read as an obvious first objective without blanket prompt spam across the whole room.
 
+### First puzzle — power cell pillar visual hint (post-event feedback)
+
+- **Change type:** UX + Gameplay + Environment / art
+- **What changed:** A **power cell pillar** with a **power cell already slotted** into it was placed **near the corner** where the **power cells** are stored, as a **visual hint** for how the first puzzle works.
+- **Why it changed:** Playtest feedback asked to make the **first puzzle more obvious** so players learn **basic mechanics** (pick up / slot power cells) before later rooms, **without** heavy-handed UI or spelling out the full solution.
+- **Impact:** Players should infer the **insert-cell-into-pillar** loop from the environment—a **show, don’t tell** tutorial beat that supports control familiarity while still leaving **which cells go where** for exploration and JAI interaction.
+- **Follow-up actions:** Re-test that the hint reads clearly on first visit but does not fully solve the three-cell puzzle on its own.
+
 ### Power-cell slots — collider / snap alignment (post-event feedback)
 
 - **Change type:** Gameplay + UX + Technical
@@ -120,6 +128,26 @@ If the player asks how to play or any questions related to the controls and not 
   **Mouse clicks on the buttons still work**—Enter is an additional input path.
 - **Why it changed:** **Both playtesters** suggested **Enter** for these actions so they would not have to **move the cursor to the button every time**; this was a **recurring theme** in post-event feedback (see `feedback-summary.md`).
 - **Impact:** Faster back-and-forth with JAI and less friction during dialogue; better fit for keyboard-first play during puzzle focus.
+
+---
+
+## Other refinements (not feedback-driven)
+
+Changes made for polish or author intent outside the post-event feedback loop.
+
+### Interactive terminal UI — visual polish
+
+- **Change type:** UI / UX + Art
+- **What changed:** The **UI for the interactive terminal** was restyled: **colours** and **background** were updated, and an image of a **corrupted ship map** was added to the screen layout.
+- **Why it changed:** Independent polish pass to make the terminal interaction feel **more finished** and **on-theme** for a damaged derelict ship, without waiting on playtest requests for this screen specifically.
+- **Impact:** The first terminal beat should read as a more credible in-world interface and slightly stronger introduction to the ship’s state before JAI-led guidance takes over.
+
+### Quit on Escape (gated until terminal interaction)
+
+- **Change type:** UX + Technical
+- **What changed:** Pressing **Escape** now **quits the application**. This behaviour is **disabled at game start** and only becomes **available after the player interacts with the terminal** for the first time.
+- **Why it changed:** Gives players a standard **exit path** once they are in the run, while avoiding accidental quits during the opening moments before they have engaged with the first critical interaction.
+- **Impact:** Clearer session control after onboarding; opening beat stays protected from an immediate Escape-to-quit during initial exploration.
 
 ---
 

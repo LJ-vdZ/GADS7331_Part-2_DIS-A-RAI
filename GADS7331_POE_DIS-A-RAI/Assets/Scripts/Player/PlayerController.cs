@@ -81,6 +81,7 @@ public class PlayerController : MonoBehaviour
         HandleMovement();
         HandleInteraction();
         UpdateCarriedCrate();
+
     }
 
     private void LateUpdate()
