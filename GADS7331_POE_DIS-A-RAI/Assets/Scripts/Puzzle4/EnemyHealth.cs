@@ -29,7 +29,6 @@ public class EnemyHealth : MonoBehaviour
 
     void Die()
     {
-        // Play death animation / effects here
         CombatEffects.Explode(transform.position);
         Destroy(gameObject);
     }

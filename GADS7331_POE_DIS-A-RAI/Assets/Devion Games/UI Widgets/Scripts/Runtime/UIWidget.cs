@@ -168,8 +168,12 @@ namespace DevionGames.UIWidgets
 			m_RectTransform = GetComponent<RectTransform> ();
 			m_CanvasGroup = GetComponent<CanvasGroup> ();
 			this.m_Scrollbars = GetComponentsInChildren<Scrollbar>();
-			this.m_CameraTransform = Camera.main.transform;
-			this.m_CameraController = this.m_CameraTransform.GetComponent("ThirdPersonCamera") as MonoBehaviour;
+			Camera mainCamera = Camera.main;
+			if (mainCamera != null)
+			{
+				this.m_CameraTransform = mainCamera.transform;
+				this.m_CameraController = this.m_CameraTransform.GetComponent("ThirdPersonCamera") as MonoBehaviour;
+			}
 			PlayerInfo playerInfo = new PlayerInfo("Player");
 
 			if (playerInfo.gameObject != null)

@@ -88,6 +88,9 @@ public class PlayerController : MonoBehaviour
     {
         // Always handle mouse look in LateUpdate for smoothest feel
         HandleMouseLook();
+
+        if (!isInZeroGravity)
+            StickToPlatform();
     }
 
     private void HandleMouseLook()
@@ -161,8 +164,6 @@ public class PlayerController : MonoBehaviour
 
         bool movingOnFoot = (h * h + v * v) > 0.04f && characterController.isGrounded;
         GameAudio.SetPlayerFootsteps(movingOnFoot, isSprinting && carriedCrate == null);
-
-        StickToPlatform();
     }
 
     private void HandleZeroGMovement()
@@ -214,25 +215,39 @@ public class PlayerController : MonoBehaviour
         playerRb.angularVelocity = Vector3.zero;
     }
 
+    private Vector3 lastPlatformPosition;
+
     private void StickToPlatform()
     {
+        if (transform.parent != null && transform.parent.CompareTag("ElevatorPlatform"))
+            transform.SetParent(null, true);
+
         if (Physics.Raycast(transform.position + Vector3.up * 0.15f, Vector3.down, out RaycastHit hit, 0.6f))
         {
             if (hit.transform.CompareTag("ElevatorPlatform"))
             {
-                if (currentPlatform != hit.transform)
+                Transform platform = hit.transform;
+                if (currentPlatform != platform)
                 {
-                    currentPlatform = hit.transform;
-                    transform.SetParent(currentPlatform);
+                    currentPlatform = platform;
+                    lastPlatformPosition = platform.position;
+                }
+                else if (characterController != null && characterController.enabled)
+                {
+                    Vector3 delta = platform.position - lastPlatformPosition;
+                    lastPlatformPosition = platform.position;
+                    if (delta.sqrMagnitude > 0f)
+                        characterController.Move(delta);
+                }
+                else
+                {
+                    lastPlatformPosition = platform.position;
                 }
                 return;
             }
         }
-        if (currentPlatform != null)
-        {
-            transform.SetParent(null);
-            currentPlatform = null;
-        }
+
+        currentPlatform = null;
     }
 
     private void HandleInteraction()
