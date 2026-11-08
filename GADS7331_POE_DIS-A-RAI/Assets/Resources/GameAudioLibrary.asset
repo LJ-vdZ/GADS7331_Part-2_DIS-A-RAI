@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7c3e1b94d6f4a28b5e0c1d27f8a3946, type: 3}
+  m_Name: GameAudioLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::GameAudioLibrary
+  uiClick: {fileID: 8300000, guid: 4a38a9fbec535d44a8e8b644def16485, type: 3}
+  equipGun: {fileID: 8300000, guid: 2f682ceff15b23d44a4f74c55c369c92, type: 3}
+  gunShot: {fileID: 8300000, guid: 9b7d541852d4e2b4983e63ee0aaf5a73, type: 3}
+  jaiTyping: {fileID: 8300000, guid: dcabc34fc0b0206408430cb3189edba7, type: 3}
+  menu: {fileID: 8300000, guid: 75a107f40f6133742aec83de2615cceb, type: 3}
+  shipMapGlitch: {fileID: 8300000, guid: f9c587f7590431942b37b4ba14dec70b, type: 3}
+  dialogueText: {fileID: 8300000, guid: 83ab76d04226d444cb7e3ca2aec6d5a5, type: 3}
+  walking: {fileID: 8300000, guid: f2b8360492148f730a351627c43f8e91, type: 3}
+  running: {fileID: 8300000, guid: e1a725f381037e62f9240516b32e7d80, type: 3}
+  robotWalking: {fileID: 8300000, guid: 03c94715a32590841b462738d5409fa2, type: 3}

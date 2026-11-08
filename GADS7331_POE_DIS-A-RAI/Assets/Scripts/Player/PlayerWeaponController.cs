@@ -77,6 +77,7 @@ public class PlayerWeaponController : MonoBehaviour
             {
                 playerGun.SetActive(true);
                 hasGun = true;
+                GameAudio.PlayEquipGun();
                 Destroy(pickup.gameObject);
                 Debug.Log("Gun picked up!");
             }
@@ -85,6 +86,7 @@ public class PlayerWeaponController : MonoBehaviour
 
     void Shoot()
     {
+        GameAudio.PlayGunShot();
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
         RaycastHit hit;
 

@@ -48,6 +48,7 @@ public class JunasAI : MonoBehaviour
 
     public IEnumerator SendStreamingRequest(string userInput, System.Action<string> onChunk)
     {
+        GameAudio.BeginJaiTyping();
         //create request payload for ollama model
         var requestData = new OllamaChatRequest
         {
@@ -89,6 +90,7 @@ public class JunasAI : MonoBehaviour
                 onChunk?.Invoke("\nError: " + www.error);
             }
         }
+        GameAudio.EndJaiTyping();
     }
 
     //private string ExtractContent(string response)

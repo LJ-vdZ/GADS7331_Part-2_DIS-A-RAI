@@ -22,6 +22,7 @@ public class SecurityBot : MonoBehaviour
     private bool isChasing = false;
     private bool isDeactivated = false;
     private string currentState = "";
+    private AudioSource stepSource;
 
     private void Start()        // Changed from Awake to Start
     {
@@ -31,6 +32,15 @@ public class SecurityBot : MonoBehaviour
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
+
+        stepSource = gameObject.AddComponent<AudioSource>();
+        stepSource.playOnAwake = false;
+        stepSource.loop = true;
+        stepSource.spatialBlend = 1f;
+        stepSource.minDistance = 2f;
+        stepSource.maxDistance = 22f;
+        stepSource.rolloffMode = AudioRolloffMode.Linear;
+        stepSource.dopplerLevel = 0f;
     }
 
     private void Update()
@@ -53,6 +63,8 @@ public class SecurityBot : MonoBehaviour
             ChasePlayer();
         else
             Patrol();
+
+        UpdateFootsteps();
 
         // Game Over Check
         if (distanceToPlayer <= attackRange)
@@ -101,6 +113,9 @@ public class SecurityBot : MonoBehaviour
     {
         Debug.Log("GAME OVER - Caught by Security Bot!");
 
+        if (stepSource != null)
+            stepSource.Stop();
+
         SceneManager.LoadScene("GameOver");
 
         //Time.timeScale = 0f;   // Pause game
@@ -126,6 +141,9 @@ public class SecurityBot : MonoBehaviour
         isDeactivated = true;
         agent.enabled = false;
 
+        if (stepSource != null)
+            stepSource.Stop();
+
         if (animator != null)
             animator.enabled = false;
 
@@ -133,4 +151,32 @@ public class SecurityBot : MonoBehaviour
     }
 
     public bool IsDeactivated() => isDeactivated;
+
+    private void UpdateFootsteps()
+    {
+        if (stepSource == null)
+            return;
+
+        if (isDeactivated || agent == null || !agent.enabled || agent.velocity.sqrMagnitude < 0.05f)
+        {
+            if (stepSource.isPlaying)
+                stepSource.Stop();
+            return;
+        }
+
+        float pitch = Mathf.Clamp(agent.velocity.magnitude / Mathf.Max(patrolSpeed, 0.01f), 0.9f, 1.8f);
+        stepSource.pitch = pitch;
+
+        if (stepSource.isPlaying)
+            return;
+
+        AudioClip clip = GameAudio.RobotWalkingClip;
+        if (clip == null)
+            return;
+
+        stepSource.clip = clip;
+        stepSource.volume = 0.7f;
+        stepSource.loop = true;
+        stepSource.Play();
+    }
 }

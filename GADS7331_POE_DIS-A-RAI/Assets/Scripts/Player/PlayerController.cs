@@ -124,11 +124,13 @@ public class PlayerController : MonoBehaviour
         if (movementLocked)
         {
             // Still allow mouse look, but no movement
+            GameAudio.SetPlayerFootsteps(false, false);
             return;
         }
 
         if (isInZeroGravity)
         {
+            GameAudio.SetPlayerFootsteps(false, false);
             HandleZeroGMovement();
             return;
         }
@@ -156,6 +158,9 @@ public class PlayerController : MonoBehaviour
         moveVelocity.z = desiredMove.z;
 
         characterController.Move(moveVelocity * Time.deltaTime);
+
+        bool movingOnFoot = (h * h + v * v) > 0.04f && characterController.isGrounded;
+        GameAudio.SetPlayerFootsteps(movingOnFoot, isSprinting && carriedCrate == null);
 
         StickToPlatform();
     }
@@ -284,6 +289,20 @@ public class PlayerController : MonoBehaviour
                 return;
             }
 
+            PowerCellSlot occupiedSlot = hit.collider.GetComponent<PowerCellSlot>() ?? hit.collider.GetComponentInParent<PowerCellSlot>();
+            if (occupiedSlot == null)
+            {
+                PowerCell placedCell = hit.collider.GetComponent<PowerCell>() ?? hit.collider.GetComponentInParent<PowerCell>();
+                if (placedCell != null && placedCell.isPlaced)
+                    occupiedSlot = FindSlotHolding(placedCell);
+            }
+
+            if (occupiedSlot != null && occupiedSlot.currentCell != null)
+            {
+                PullCellFromSlot(occupiedSlot);
+                return;
+            }
+
             Rigidbody rb = hit.collider.GetComponentInParent<Rigidbody>();
 
             if (rb != null)
@@ -295,6 +314,33 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+    }
+
+    private PowerCellSlot FindSlotHolding(PowerCell cell)
+    {
+        PowerCellSlot[] slots = FindObjectsByType<PowerCellSlot>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (PowerCellSlot slot in slots)
+        {
+            if (slot.currentCell == cell)
+                return slot;
+        }
+        return null;
+    }
+
+    private void PullCellFromSlot(PowerCellSlot slot)
+    {
+        PowerCell cell = slot.currentCell;
+        if (cell == null)
+            return;
+
+        Rigidbody cellBody = cell.GetComponent<Rigidbody>();
+        slot.RemoveCell();
+
+        if (cellBody == null)
+            return;
+
+        cell.OnPickup();
+        PickupObject(cellBody);
     }
 
     private void AttachCrate(Transform crate)
