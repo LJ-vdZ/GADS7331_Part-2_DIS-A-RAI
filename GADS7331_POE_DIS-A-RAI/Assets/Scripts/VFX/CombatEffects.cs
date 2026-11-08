@@ -233,7 +233,9 @@ public class CombatEffects : MonoBehaviour
         main.simulationSpace = ParticleSystemSimulationSpace.World;
 
         ParticleSystemRenderer renderer = host.GetComponent<ParticleSystemRenderer>();
-        renderer.material = ParticleMaterial();
+        Material material = ParticleMaterial();
+        if (material != null)
+            renderer.material = material;
         renderer.renderMode = ParticleSystemRenderMode.Billboard;
         return system;
     }
@@ -311,13 +313,26 @@ public class CombatEffects : MonoBehaviour
         if (particleMaterial != null)
             return particleMaterial;
 
-        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-        if (shader == null)
-            shader = Shader.Find("Particles/Standard Unlit");
-        if (shader == null)
-            shader = Shader.Find("Sprites/Default");
+        Material source = Resources.Load<Material>("CombatParticle");
+        if (source != null)
+        {
+            particleMaterial = new Material(source);
+        }
+        else
+        {
+            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (shader == null)
+                shader = Shader.Find("Particles/Standard Unlit");
+            if (shader == null)
+                shader = Shader.Find("Sprites/Default");
+            if (shader == null)
+            {
+                Debug.LogError("CombatParticle material is missing, so the shot and explosion effects cannot render.");
+                return null;
+            }
 
-        particleMaterial = new Material(shader);
+            particleMaterial = new Material(shader);
+        }
         Texture2D circle = SoftCircle();
         if (particleMaterial.HasProperty("_BaseMap"))
             particleMaterial.SetTexture("_BaseMap", circle);
