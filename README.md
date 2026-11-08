@@ -79,5 +79,36 @@ Why local LLM runtime is used:
 - keeps player input processing local
 - avoids recurring cloud inference costs during development
 
+## Credits
 
-Add contributors, asset attributions, and third-party acknowledgements here as the project grows.
+Third-party art, interface assets, and sound used in the game. Unity Asset Store packages are used under the Unity Asset Store EULA.
+
+### 3D art and environments
+
+- [Creepy Cat](https://assetstore.unity.com/packages/3d/environments/3d-scifi-kit-starter-kit-92152) — 3D Scifi Kit Starter Kit. Ship interiors, corridors, doors, and props.
+- [Terresquall](https://assetstore.unity.com/packages/3d/environments/sci-fi/free-sci-fi-office-pack-195067) — Free Sci-Fi Office Pack. Office props, including the server racks.
+- [Methexis Studios](https://assetstore.unity.com/packages/3d/environments/sci-fi/sci-fi-modular-pack-64442) — Sci-Fi Modular Pack. Modular floor pieces.
+- [CGPitbull](https://assetstore.unity.com/packages/3d/vehicles/space/dropship-r35-121438) — DropShip R35. The dropship shown in the game.
+- [Baydinman](https://assetstore.unity.com/packages/3d/characters/robots/robot-1-65726) — Robot 1. The security bot model and its animations.
+- [AntiDed GameDev](https://assetstore.unity.com/packages/3d/environments/sci-fi/hitech-scifi-energy-cell-154526) — HiTech SciFi Energy Cell. The power cells.
+- [Slash Asset Stash](https://assetstore.unity.com/packages/3d/props/sci-fi-crate-low-poly-free-urp-173856) — Sci-Fi Crate Low Poly Free. The crates.
+
+### Interface
+
+- [Devion Games](https://assetstore.unity.com/packages/tools/gui/ui-widgets-55542) — UI Widgets.
+- [OccaSoftware](https://occasoftware.com/) — Massive Crosshair Bundle. The in-game crosshair.
+- Isurus Labs — Jupiter, a public-domain font used in the menus.
+- Unity Technologies — Unity, the Universal Render Pipeline, and TextMesh Pro. Liberation Sans is included with TextMesh Pro and is licensed under the [SIL Open Font License](https://scripts.sil.org/OFL).
+
+### Sound effects
+
+- [Footsteps, boots](https://pixabay.com/sound-effects/film-special-effects-footsteps-boots-101657/) — Pixabay. Player footsteps.
+- [Item equip](https://pixabay.com/sound-effects/film-special-effects-item-equip-6904/) — Pixabay. Equipping the gun.
+- [Medium text blip](https://pixabay.com/sound-effects/film-special-effects-medium-text-blip-14855/) — Pixabay. Dialogue text.
+- [Message text on spectrogram](https://pixabay.com/sound-effects/film-special-effects-message-text-on-spectrogram-64075/) — Pixabay. AI typing.
+- [UI processing data sequence](https://pixabay.com/sound-effects/film-special-effects-ui-processing-data-sequence-modern-interface-progress-02-230495/) — Pixabay. Ship map interface.
+- [Sci-fi UI click](https://pixabay.com/sound-effects/technology-sci-fi-ui-click-sound-596258/) — Pixabay. UI clicks.
+- [Binary code interface, sci-fi computer UI sounds](https://pixabay.com/sound-effects/technology-binary-code-interface-sound-effects-sci-fi-computer-ui-sounds-209403/) — Pixabay. Menu audio.
+- [Robot running, footsteps and mechanisms](https://youtu.be/dcV7DZj_i_4) — [The Audio Horizon](https://www.theaudiohorizon.com/). Security bot movement. Royalty-free.
+
+Pixabay sounds are used under the [Pixabay Content License](https://pixabay.com/service/license-summary/).
