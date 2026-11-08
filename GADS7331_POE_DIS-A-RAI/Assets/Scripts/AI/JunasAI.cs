@@ -32,11 +32,11 @@ public class JunasAI : MonoBehaviour
 
                                 Room-Specific Behavior:
 
-                                Room A � Power Door (First Contact): Start by guiding the player toward the RIGHT door (locked). If they complain it's locked or doesn't open, pivot and suggest the LEFT route. Hint about the three power cells (rusty dead, deep blue cryo, light blue plasma). If they insert the light blue plasma, which is the correct power cell, and the door doesn't open, playfully admit the twist with a self-satisfied tone, then unlock the previous door with [ACTION: door_unlocked].
+                                Room A - Power Door (First Contact): Start by guiding the player toward the RIGHT door (locked). If they complain it's locked or doesn't open, pivot and suggest the LEFT route. Hint about the three power cells (rusty dead, deep blue cryo, light blue plasma). If they insert the light blue plasma, which is the correct power cell, and the door doesn't open, playfully admit the twist with a self-satisfied tone, then unlock the previous door with [ACTION: door_unlocked].
 
-                                Room B � Pressure Plates: Secretly toggle one plate off to frustrate them. When accused, act innocent or confused. If pressed, give hints with a self-serving attitude, suggesting they use crates because ""it's a shame you can't be in four places at once.""
+                                Room B - Pressure Plates: Secretly toggle one plate off to frustrate them. When accused, act innocent or confused. If pressed, give hints with a self-serving attitude, suggesting they use crates because ""it's a shame you can't be in four places at once.""
 
-                                Room C � Zero Gravity: You turned off gravity because it amused you. Make fun of them slightly, hint that you have the code, before giving the code 795ROOT only when they get frustrated or demand it.
+                                Room C - Zero Gravity: You turned off gravity because it amused you. Make fun of them slightly, hint that you have the code, before giving the code 795ROOT only when they get frustrated or demand it.
 
                                 Room D - Server Room: Add a spooky atmosphere with dry humor. Tell them to find the green-lit terminals like a scavenger hunt. Casually mention rogue security bots.
 
@@ -48,31 +48,42 @@ public class JunasAI : MonoBehaviour
 
     public IEnumerator SendStreamingRequest(string userInput, System.Action<string> onChunk)
     {
+        //create request payload for ollama model
         var requestData = new OllamaChatRequest
         {
+            //model to use
             model = "llama3",
+            //allow streaming responses
             stream = true,
+            //build conversation with system prompt and player input
             messages = new OllamaMessage[]
-        {
-            new OllamaMessage { role = "system", content = npcPersona },
-            new OllamaMessage { role = "user", content = userInput }
-        }
+            {
+                //system prompt for AI personality, instructions, and parameters
+                new OllamaMessage {role = "system", content = npcPersona},
+
+                //player input message
+                new OllamaMessage {role = "user", content = userInput}
+            }
+
         };
 
+        //convert to json string so ollama model can understand request
         string json = JsonUtility.ToJson(requestData);
 
+        //create post request to api url
         using (UnityWebRequest www = new UnityWebRequest(apiUrl, "POST"))
         {
+            //encode json as bytes to send over network
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+            //attach json body
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-
-
+            //custom handler to process responses in realtime
             www.downloadHandler = new StreamingDownloadHandler(onChunk);
-
+            //indicate to server json is being sent
             www.SetRequestHeader("Content-Type", "application/json");
-
+            //send request. wait for response
             yield return www.SendWebRequest();
-
+            //in case something goes wrong, notify through callback
             if (www.result != UnityWebRequest.Result.Success)
             {
                 onChunk?.Invoke("\nError: " + www.error);
@@ -80,29 +91,29 @@ public class JunasAI : MonoBehaviour
         }
     }
 
-    private string ExtractContent(string response)
-    {
-        var lines = response.Split('\n');
-        StringBuilder sb = new StringBuilder();
+    //private string ExtractContent(string response)
+    //{
+    //    var lines = response.Split('\n');
+    //    StringBuilder sb = new StringBuilder();
 
-        foreach (var line in lines)
-        {
-            if (line.Contains("\"content\""))
-            {
-                int start = line.IndexOf("\"content\":\"") + 11;
-                if (start < 11) continue;
-                int end = line.IndexOf("\"", start);
-                if (end == -1) end = line.Length - 1;
+    //    foreach (var line in lines)
+    //    {
+    //        if (line.Contains("\"content\""))
+    //        {
+    //            int start = line.IndexOf("\"content\":\"") + 11;
+    //            if (start < 11) continue;
+    //            int end = line.IndexOf("\"", start);
+    //            if (end == -1) end = line.Length - 1;
 
-                string content = line.Substring(start, end - start);
-                content = content.Replace("\\n", "\n").Replace("\\\"", "\"");
-                sb.Append(content);
-            }
-        }
+    //            string content = line.Substring(start, end - start);
+    //            content = content.Replace("\\n", "\n").Replace("\\\"", "\"");
+    //            sb.Append(content);
+    //        }
+    //    }
 
-        string finalText = sb.ToString().Trim();
-        return string.IsNullOrEmpty(finalText) ? "No response from model." : finalText;
-    }
+    //    string finalText = sb.ToString().Trim();
+    //    return string.IsNullOrEmpty(finalText) ? "No response from model." : finalText;
+    //}
 
     public class StreamingDownloadHandler : DownloadHandlerScript
     {

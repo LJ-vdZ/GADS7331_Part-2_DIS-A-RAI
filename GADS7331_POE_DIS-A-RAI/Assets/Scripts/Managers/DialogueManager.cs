@@ -16,7 +16,7 @@ public class DialogueManager : MonoBehaviour
     private Button sendButton;
 
     [SerializeField]
-    private JunasAI JunasAI;
+    private JunasAI JAI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -43,7 +43,7 @@ public class DialogueManager : MonoBehaviour
 
         outputText.text = "";
 
-        StartCoroutine(JunasAI.SendStreamingRequest(userText, OnStreamChunk));
+        StartCoroutine(JAI.SendStreamingRequest(userText, OnStreamChunk));
     }
 
     private void OnStreamChunk(string chunk)
