@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class SecurityBot : MonoBehaviour
@@ -21,6 +20,7 @@ public class SecurityBot : MonoBehaviour
 
     private bool isChasing = false;
     private bool isDeactivated = false;
+    private bool gameOverTriggered = false;
     private string currentState = "";
     private AudioSource stepSource;
 
@@ -45,7 +45,7 @@ public class SecurityBot : MonoBehaviour
 
     private void Update()
     {
-        if (isDeactivated) return;
+        if (isDeactivated || gameOverTriggered) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         float distanceToBox = blackBox != null ? Vector3.Distance(transform.position, blackBox.position) : 999f;
@@ -111,12 +111,16 @@ public class SecurityBot : MonoBehaviour
 
     private void GameOver()
     {
+        if (gameOverTriggered)
+            return;
+
+        gameOverTriggered = true;
         Debug.Log("GAME OVER - Caught by Security Bot!");
 
         if (stepSource != null)
             stepSource.Stop();
 
-        SceneManager.LoadScene("GameOver");
+        SceneFade.Load("GameOver");
 
         //Time.timeScale = 0f;   // Pause game
 

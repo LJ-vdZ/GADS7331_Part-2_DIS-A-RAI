@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class BlackBox : MonoBehaviour
 {
@@ -44,7 +43,7 @@ public class BlackBox : MonoBehaviour
             // Hide trigger collider while being carried
             GetComponent<Collider>().enabled = false;
 
-            SceneManager.LoadScene("WinState");
+            SceneFade.Load("WinState");
 
 
         }

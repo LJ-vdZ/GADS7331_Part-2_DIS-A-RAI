@@ -1,11 +1,10 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
     public void StartGame() 
     {
-        SceneManager.LoadScene("Gameplay");
+        SceneFade.Load("Gameplay");
     }
 
     public void Quit()
@@ -15,11 +14,11 @@ public class UIManager : MonoBehaviour
 
     public void Restart()
     {
-        SceneManager.LoadScene("Gameplay");
+        SceneFade.Load("Gameplay");
     }
 
     public void Home() 
     {
-        SceneManager.LoadScene("StartMenu");
+        SceneFade.Load("StartMenu");
     }
 }

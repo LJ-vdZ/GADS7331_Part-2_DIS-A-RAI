@@ -87,19 +87,25 @@ public class PlayerWeaponController : MonoBehaviour
     void Shoot()
     {
         GameAudio.PlayGunShot();
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        Vector3 origin = firePoint != null ? firePoint.position : playerCamera.transform.position;
+        Vector3 direction = playerCamera.transform.forward;
+        Ray ray = new Ray(playerCamera.transform.position, direction);
+        Vector3 end = origin + direction * range;
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, range))
         {
+            end = hit.point;
             EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();
             if (enemy == null)
                 enemy = hit.collider.GetComponentInParent<EnemyHealth>();
 
             if (enemy != null)
             {
-                enemy.TakeDamage(damage);
+                enemy.TakeDamage(damage, hit.point);
             }
         }
+
+        CombatEffects.SpawnElectricBall(origin, end);
     }
 }

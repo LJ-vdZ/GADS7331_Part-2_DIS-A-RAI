@@ -12,6 +12,12 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        TakeDamage(amount, transform.position);
+    }
+
+    public void TakeDamage(float amount, Vector3 hitPoint)
+    {
+        CombatEffects.ShockBot(transform, hitPoint);
         currentHealth -= amount;
         Debug.Log(gameObject.name + " took " + amount + " damage. Remaining: " + currentHealth);
 
@@ -24,6 +30,7 @@ public class EnemyHealth : MonoBehaviour
     void Die()
     {
         // Play death animation / effects here
+        CombatEffects.Explode(transform.position);
         Destroy(gameObject);
     }
 }

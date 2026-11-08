@@ -37,6 +37,7 @@ public class GameAudio : MonoBehaviour
         GameObject services = new GameObject("GameServices");
         DontDestroyOnLoad(services);
         services.AddComponent<GameAudio>();
+        services.AddComponent<SceneFade>();
     }
 
     void Awake()
